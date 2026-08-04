@@ -6,17 +6,12 @@ import { useRouter } from "next/navigation";
 import { LogIn, Mail, Lock, User, UserPlus } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ROUTES } from "@/constants";
 import { loginSchema, registerSchema } from "@/features/auth/schemas/authSchema";
 import { authService } from "@/features/auth/services/authService";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { profileRoutingService } from "@/features/profiles/services/profileRoutingService";
 import { getErrorMessage } from "@/utils/errorHandler";
 
 type AuthMode = "login" | "register";
@@ -49,9 +44,21 @@ export function AuthForm({ mode }: AuthFormProps) {
   const isRegister = mode === "register";
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      router.replace(ROUTES.SEARCH);
+    async function routeAuthenticatedUser() {
+      if (authLoading || !isAuthenticated) return;
+
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) return;
+
+      const routeResult = await profileRoutingService.getRouteForUser(currentUser);
+      if (routeResult.error || !routeResult.data) {
+        setError(routeResult.error?.userMessage || "Failed to check your profile.");
+        return;
+      }
+
+      router.replace(routeResult.data.route);
     }
+    void routeAuthenticatedUser();
   }, [authLoading, isAuthenticated, router]);
 
   const updateField = (field: keyof FormState, value: string) => {
@@ -68,15 +75,23 @@ export function AuthForm({ mode }: AuthFormProps) {
       if (isRegister) {
         const payload = registerSchema.parse(form);
         await authService.register(payload);
+        router.replace(ROUTES.COMPLETE_PROFILE);
+        return;
       } else {
         const payload = loginSchema.parse({
           email: form.email,
           password: form.password,
         });
-        await authService.login(payload);
-      }
+        const credential = await authService.login(payload);
+        const routeResult = await profileRoutingService.getRouteForUser(credential.user);
+        if (routeResult.error || !routeResult.data) {
+          setError(routeResult.error?.userMessage || "Failed to check your profile.");
+          return;
+        }
 
-      router.replace(ROUTES.SEARCH);
+        router.replace(routeResult.data.route);
+        return;
+      }
     } catch (submitError) {
       setError(getErrorMessage(submitError));
     } finally {

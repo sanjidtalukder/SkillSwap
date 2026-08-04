@@ -24,7 +24,11 @@ export async function handleServiceCall<T>(
     ) {
       normalized.userMessage = fallbackMessage;
     }
-    console.error(`[Service Error ${normalized.code}]:`, err);
+
+    if (!normalized.isOffline && process.env.NODE_ENV !== "production") {
+      console.warn(`[Service Error ${normalized.code}]:`, err);
+    }
+
     return { data: null, error: normalized };
   }
 }

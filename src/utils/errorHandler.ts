@@ -6,6 +6,19 @@ export interface NormalizedError {
   message: string;
   userMessage: string;
   statusCode: number;
+  isOffline?: boolean;
+}
+
+function isOfflineError(code?: string, message = "") {
+  const normalizedMessage = message.toLowerCase();
+
+  return (
+    code === "unavailable" ||
+    code === "auth/network-request-failed" ||
+    normalizedMessage.includes("client is offline") ||
+    normalizedMessage.includes("network") ||
+    normalizedMessage.includes("offline")
+  );
 }
 
 /**
@@ -20,6 +33,7 @@ export function parseError(error: unknown): NormalizedError {
       message: error.message,
       userMessage: error.userMessage,
       statusCode: error.statusCode,
+      isOffline: isOfflineError(error.code, error.message),
     };
   }
 
@@ -40,15 +54,29 @@ export function parseError(error: unknown): NormalizedError {
   // Case 3: Firebase SDK Error object (has .code property)
   if (typeof error === "object" && error !== null && "code" in error) {
     const fbError = error as { code: string; message?: string };
+    const message = fbError.message || "Firebase operation failed";
+    const offline = isOfflineError(fbError.code, message);
+
+    if (offline) {
+      return {
+        code: fbError.code || "NETWORK_ERROR",
+        message,
+        userMessage: "Unable to reach the database. Please check your connection and try again.",
+        statusCode: 503,
+        isOffline: true,
+      };
+    }
+
     const parsedFbError = new FirebaseAppError(
       fbError.code,
-      fbError.message || "Firebase operation failed"
+      message
     );
     return {
       code: parsedFbError.code,
       message: parsedFbError.message,
       userMessage: parsedFbError.userMessage,
       statusCode: parsedFbError.statusCode,
+      isOffline: false,
     };
   }
 
@@ -60,6 +88,7 @@ export function parseError(error: unknown): NormalizedError {
       message: netError.message,
       userMessage: netError.userMessage,
       statusCode: netError.statusCode,
+      isOffline: true,
     };
   }
 
@@ -70,6 +99,7 @@ export function parseError(error: unknown): NormalizedError {
       message: error.message,
       userMessage: error.message || "An unexpected error occurred. Please try again.",
       statusCode: 500,
+      isOffline: isOfflineError(undefined, error.message),
     };
   }
 
@@ -79,6 +109,7 @@ export function parseError(error: unknown): NormalizedError {
     message: String(error),
     userMessage: "An unexpected error occurred. Please try again.",
     statusCode: 500,
+    isOffline: isOfflineError(undefined, String(error)),
   };
 }
 

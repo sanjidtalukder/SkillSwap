@@ -42,6 +42,8 @@ export const searchService = {
     return handleServiceCall(async () => {
       const constraints = [];
 
+      constraints.push(where("profileCompleted", "==", true));
+
       // 1. Filter by Skill
       if (filters.skill && filters.skill.trim().length > 0) {
         constraints.push(where("skillsOffered", "array-contains", filters.skill.trim()));

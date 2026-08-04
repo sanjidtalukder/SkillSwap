@@ -73,7 +73,8 @@ function getFirebaseUserMessage(code: string, defaultMsg: string): string {
     "already-exists": "This record already exists.",
     "resource-exhausted": "Quota limit reached. Please try again shortly.",
     "failed-precondition": "Operation failed due to database query conditions.",
-    unavailable: "Database service is temporarily unavailable. Please try again.",
+    unavailable:
+      "Unable to reach the database. Please check your connection and try again.",
   };
 
   return (

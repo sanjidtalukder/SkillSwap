@@ -43,6 +43,16 @@ service cloud.firestore {
         request.resource.data[fieldName] == resource.data[fieldName];
     }
 
+    /** Checks optional profile arrays used by the completed profile flow */
+    function hasValidProfileArrays() {
+      return (!('skillsHave' in request.resource.data) ||
+          (request.resource.data.skillsHave is list && request.resource.data.skillsHave.size() <= 20))
+        && (!('skillsNeed' in request.resource.data) ||
+          (request.resource.data.skillsNeed is list && request.resource.data.skillsNeed.size() <= 20))
+        && (!('profileCompleted' in request.resource.data) ||
+          request.resource.data.profileCompleted is bool);
+    }
+
     // =========================================================================
     // 1. USERS COLLECTION (/users/{userId})
     // =========================================================================
@@ -63,6 +73,7 @@ service cloud.firestore {
         && request.resource.data.skillsOffered.size() <= 20
         && request.resource.data.skillsWanted is list
         && request.resource.data.skillsWanted.size() <= 20
+        && hasValidProfileArrays()
         && request.resource.data.rating == 5.0 // Initial rating default
         && request.resource.data.completedSwaps == 0; // Initial swap counter
 
@@ -79,7 +90,8 @@ service cloud.firestore {
         && request.resource.data.skillsOffered is list
         && request.resource.data.skillsOffered.size() <= 20
         && request.resource.data.skillsWanted is list
-        && request.resource.data.skillsWanted.size() <= 20;
+        && request.resource.data.skillsWanted.size() <= 20
+        && hasValidProfileArrays();
 
       /**
        * DELETE: Account deletion is disabled at direct SDK layer to prevent accidental data loss.

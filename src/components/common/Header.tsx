@@ -24,11 +24,11 @@ export const Header = memo(function Header() {
       aria-label="Main Navigation Header"
       className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
     >
-      <div className="container flex h-14 max-w-screen-2xl items-center justify-between px-4">
+      <div className="container flex h-14 max-w-screen-2xl items-center justify-between gap-3 px-4">
         <Link
           href={ROUTES.HOME}
           aria-label="SkillSwap Home"
-          className="flex items-center space-x-2 text-xl font-bold"
+          className="flex shrink-0 items-center space-x-2 text-lg font-bold sm:text-xl"
         >
           <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
             {SITE_CONFIG.name}
@@ -37,7 +37,7 @@ export const Header = memo(function Header() {
         <nav
           role="navigation"
           aria-label="Primary Navigation"
-          className="flex items-center space-x-6 text-sm font-medium"
+          className="flex min-w-0 flex-1 items-center justify-end gap-3 overflow-x-auto whitespace-nowrap text-xs font-medium sm:gap-6 sm:text-sm"
         >
           <Link
             href={ROUTES.PROJECTS}
@@ -55,6 +55,13 @@ export const Header = memo(function Header() {
           </Link>
           {loading ? null : isAuthenticated ? (
             <>
+              <Link
+                href={ROUTES.DASHBOARD}
+                aria-label="Open Skill Feed"
+                className="text-foreground/60 transition-colors hover:text-foreground/80"
+              >
+                Feed
+              </Link>
               <span className="hidden max-w-40 truncate text-foreground/60 sm:inline">
                 {user?.displayName || user?.email}
               </span>

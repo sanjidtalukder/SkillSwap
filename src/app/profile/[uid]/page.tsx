@@ -1,0 +1,77 @@
+"use client";
+
+import { useParams } from "next/navigation";
+import { Alert } from "@/components/ui/Alert";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Spinner } from "@/components/ui/Spinner";
+import { Footer } from "@/components/common/Footer";
+import { Header } from "@/components/common/Header";
+import { ProfileCard } from "@/features/profiles/components/ProfileCard";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useProfileById } from "@/features/profiles/hooks/useProfileById";
+import { useProfileRedirect } from "@/features/profiles/hooks/useProfileStatus";
+import { ExternalLink } from "lucide-react";
+
+export default function ProfileDetailPage() {
+  const params = useParams<{ uid: string }>();
+  const { user, loading: authLoading } = useAuth();
+  const {
+    isCheckingProfile,
+    profileCompleted,
+    error: authProfileError,
+  } = useProfileRedirect(user, authLoading, {
+    redirectWhenIncomplete: true,
+  });
+  const { profile, isLoading, error, reload } = useProfileById(
+    params.uid,
+    Boolean(user) && !authLoading
+  );
+
+  const isBusy = authLoading || isCheckingProfile || profileCompleted !== true || isLoading;
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <Header />
+      <main className="container mx-auto max-w-4xl flex-1 space-y-6 p-6 md:p-10">
+        {(authProfileError || error) && <Alert variant="error">{authProfileError || error}</Alert>}
+
+        {isBusy ? (
+          <div className="flex min-h-[360px] items-center justify-center">
+            <Spinner size="lg" />
+          </div>
+        ) : profile?.profileCompleted ? (
+          <div className="space-y-6">
+            <ProfileCard profile={profile} showActions={false} />
+            <div className="grid gap-3 rounded-xl border border-border/60 bg-card/50 p-5 sm:grid-cols-3">
+              {profile.github && <ProfileLink label="Github" href={profile.github} />}
+              {profile.linkedin && <ProfileLink label="LinkedIn" href={profile.linkedin} />}
+              {profile.portfolio && <ProfileLink label="Portfolio" href={profile.portfolio} />}
+            </div>
+          </div>
+        ) : (
+          <EmptyState
+            title="Profile not available"
+            description="This profile is missing or has not been completed yet."
+            actionLabel="Retry"
+            onAction={reload}
+          />
+        )}
+      </main>
+      <Footer />
+    </div>
+  );
+}
+
+function ProfileLink({ label, href }: { label: string; href: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-border/80 bg-background/50 px-4 text-sm font-medium transition-all duration-150 hover:border-accent hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
+      <ExternalLink className="h-4 w-4" />
+      {label}
+    </a>
+  );
+}

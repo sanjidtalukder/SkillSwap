@@ -1,0 +1,83 @@
+"use client";
+
+import { useMemo } from "react";
+import { Alert } from "@/components/ui/Alert";
+import { CardSkeleton } from "@/components/ui/CardSkeleton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Footer } from "@/components/common/Footer";
+import { Header } from "@/components/common/Header";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { ProfileCard } from "@/features/profiles/components/ProfileCard";
+import { useConnectionRequest } from "@/features/profiles/hooks/useConnectionRequest";
+import { useCompletedProfiles } from "@/features/profiles/hooks/useCompletedProfiles";
+import { useProfileRedirect } from "@/features/profiles/hooks/useProfileStatus";
+
+export default function DashboardPage() {
+  const { user, loading: authLoading } = useAuth();
+  const {
+    isCheckingProfile,
+    profileCompleted,
+    error: profileError,
+  } = useProfileRedirect(user, authLoading, { redirectWhenIncomplete: true });
+  const { profiles, isLoading, error, reload } = useCompletedProfiles(
+    Boolean(user) && !authLoading && profileCompleted === true
+  );
+  const {
+    notice: connectNotice,
+    error: connectError,
+    pendingRecipientId,
+    sendConnectionRequest,
+  } = useConnectionRequest(user);
+
+  const visibleProfiles = useMemo(
+    () => (user ? profiles.filter((profile) => profile.uid !== user.uid) : profiles),
+    [profiles, user]
+  );
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <Header />
+      <main className="container mx-auto max-w-6xl flex-1 space-y-8 p-6 md:p-10">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+            Skill Feed
+          </h1>
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            Discover completed SkillSwap profiles and connect with students whose skills match what
+            you can share or want to learn.
+          </p>
+        </div>
+
+        {(profileError || error || connectError) && (
+          <Alert variant="error">{profileError || error || connectError}</Alert>
+        )}
+        {connectNotice && <Alert variant="success">{connectNotice}</Alert>}
+
+        {authLoading || isCheckingProfile || profileCompleted !== true || isLoading ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <CardSkeleton count={6} />
+          </div>
+        ) : visibleProfiles.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleProfiles.map((profile) => (
+              <ProfileCard
+                key={profile.uid}
+                profile={profile}
+                onConnect={sendConnectionRequest}
+                isConnecting={pendingRecipientId === profile.uid}
+              />
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="No completed profiles yet"
+            description="Completed student profiles will appear here as the SkillSwap community grows."
+            actionLabel="Refresh Feed"
+            onAction={reload}
+          />
+        )}
+      </main>
+      <Footer />
+    </div>
+  );
+}

@@ -8,8 +8,25 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { Alert } from "@/components/ui/Alert";
 import { Header } from "@/components/common/Header";
 import { Footer } from "@/components/common/Footer";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useConnectionRequest } from "@/features/profiles/hooks/useConnectionRequest";
+import { useProfileRedirect } from "@/features/profiles/hooks/useProfileStatus";
 
 export default function SearchPage() {
+  const { user, loading: authLoading } = useAuth();
+  const {
+    isCheckingProfile,
+    profileCompleted,
+    error: profileError,
+  } = useProfileRedirect(user, authLoading, {
+    redirectWhenIncomplete: true,
+  });
+  const {
+    notice: connectNotice,
+    error: connectError,
+    pendingRecipientId,
+    sendConnectionRequest,
+  } = useConnectionRequest(user);
   const {
     filters,
     setSearchTerm,
@@ -52,18 +69,24 @@ export default function SearchPage() {
           isLoading={isLoading}
         />
 
-        {/* Error Alert */}
-        {error && <Alert variant="error">{error}</Alert>}
+        {(profileError || error || connectError) && (
+          <Alert variant="error">{profileError || error || connectError}</Alert>
+        )}
+        {connectNotice && <Alert variant="success">{connectNotice}</Alert>}
 
-        {/* Results Grid / Loading / Empty State */}
-        {isLoading ? (
+        {authLoading || isCheckingProfile || profileCompleted !== true || isLoading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <CardSkeleton count={6} />
           </div>
         ) : results.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {results.map((student) => (
-              <StudentSearchCard key={student.uid} student={student} />
+              <StudentSearchCard
+                key={student.uid}
+                student={student}
+                onConnect={sendConnectionRequest}
+                isConnecting={pendingRecipientId === student.uid}
+              />
             ))}
           </div>
         ) : (

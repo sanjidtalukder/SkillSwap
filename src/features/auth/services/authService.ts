@@ -22,6 +22,10 @@ export const authService = {
     return signInWithEmailAndPassword(auth, credentials.email, credentials.password);
   },
 
+  getCurrentUser() {
+    return auth.currentUser;
+  },
+
   async register(credentials: RegisterInput): Promise<UserCredential> {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
@@ -37,10 +41,27 @@ export const authService = {
 
     await setDoc(doc(db, "users", userCredential.user.uid), {
       uid: userCredential.user.uid,
+      firebaseUID: userCredential.user.uid,
       email: credentials.email.trim().toLowerCase(),
       fullName,
+      name: fullName,
+      photo: "",
+      avatarUrl: "",
+      university: "",
+      department: "",
+      semester: "",
+      location: "",
+      bio: "",
+      skillsHave: [],
+      skillsNeed: [],
       skillsOffered: [],
       skillsWanted: [],
+      github: "",
+      linkedin: "",
+      portfolio: "",
+      experience: "Beginner",
+      availability: "Part Time",
+      profileCompleted: false,
       searchKeywords: createSearchKeywords(fullName, credentials.email),
       rating: 5.0,
       completedSwaps: 0,

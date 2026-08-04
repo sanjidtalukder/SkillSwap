@@ -5,16 +5,28 @@ import { Timestamp } from "firebase/firestore";
  */
 export interface UserDocument {
   uid: string;
+  firebaseUID?: string;
   email: string;
   fullName: string;
+  name?: string;
   bio?: string;
   avatarUrl?: string;
+  photo?: string;
   university?: string;
   major?: string;
   department?: string;
   semester?: string;
+  location?: string;
   skillsOffered: string[];
   skillsWanted: string[];
+  skillsHave?: string[];
+  skillsNeed?: string[];
+  github?: string;
+  linkedin?: string;
+  portfolio?: string;
+  experience?: "Beginner" | "Intermediate" | "Advanced" | "Expert";
+  availability?: "Full Time" | "Part Time" | "Weekends";
+  profileCompleted?: boolean;
   searchKeywords?: string[];
   rating: number;
   completedSwaps: number;
