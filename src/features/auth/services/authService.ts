@@ -1,3 +1,8 @@
+/**
+ * Client-safe auth service.
+ * Only contains Firebase Auth operations — NO Prisma, NO server imports.
+ * Profile database sync is handled by API routes.
+ */
 import { auth } from "@/lib/firebase/firebase";
 import {
   signInWithEmailAndPassword,
@@ -6,16 +11,7 @@ import {
   updateProfile,
   UserCredential,
 } from "firebase/auth";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase/firebase";
-import { LoginInput, RegisterInput } from "../schemas/authSchema";
-
-function createSearchKeywords(name: string, email: string) {
-  const normalizedName = name.trim().toLowerCase();
-  const parts = normalizedName.split(/\s+/).filter(Boolean);
-
-  return Array.from(new Set([normalizedName, ...parts, email.trim().toLowerCase()]));
-}
+import { LoginInput, RegisterInput } from "@/features/auth/schemas/authSchema";
 
 export const authService = {
   async login(credentials: LoginInput): Promise<UserCredential> {
@@ -37,37 +33,6 @@ export const authService = {
 
     await updateProfile(userCredential.user, {
       displayName: fullName,
-    });
-
-    await setDoc(doc(db, "users", userCredential.user.uid), {
-      uid: userCredential.user.uid,
-      firebaseUID: userCredential.user.uid,
-      email: credentials.email.trim().toLowerCase(),
-      fullName,
-      name: fullName,
-      photo: "",
-      avatarUrl: "",
-      university: "",
-      department: "",
-      semester: "",
-      location: "",
-      bio: "",
-      skillsHave: [],
-      skillsNeed: [],
-      skillsOffered: [],
-      skillsWanted: [],
-      github: "",
-      linkedin: "",
-      portfolio: "",
-      experience: "Beginner",
-      availability: "Part Time",
-      profileCompleted: false,
-      searchKeywords: createSearchKeywords(fullName, credentials.email),
-      rating: 5.0,
-      completedSwaps: 0,
-      isOnline: true,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
     });
 
     return userCredential;

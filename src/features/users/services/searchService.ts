@@ -1,93 +1,69 @@
-import { db } from "@/firebase";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  limit,
-  startAfter,
-  QueryDocumentSnapshot,
-  DocumentData,
-} from "firebase/firestore";
-import { UserDocument } from "@/types/firestore";
-import { handleServiceCall, ServiceResult } from "@/services/baseService";
+/**
+ * Client-safe searchService.
+ * All DB operations go through API routes — NO Prisma, NO server imports.
+ */
+import { ServiceResult } from "@/services/baseService";
+import { UserProfile } from "@/features/profiles/types/profile";
 
 export interface SearchFilters {
-  searchTerm?: string; // Search by Name or Keyword
-  skill?: string; // Filter by Skill
-  department?: string; // Filter by Department
-  semester?: string; // Filter by Semester
+  searchTerm?: string;
+  skill?: string;
+  department?: string;
+  semester?: string;
 }
 
 export interface SearchResultPage {
-  users: UserDocument[];
-  lastDoc: QueryDocumentSnapshot<DocumentData> | null;
+  users: UserProfile[];
+  lastDoc: null;
   hasMore: boolean;
 }
 
-const USERS_COLLECTION = "users";
-const DEFAULT_PAGE_SIZE = 15;
-
-/**
- * Scalable Search Service Architecture
- * Supports multi-field filtering by Name, Skill, Department, and Semester.
- * Employs cursor-based pagination and array-contains queries.
- */
 export const searchService = {
   async searchStudents(
     filters: SearchFilters,
-    pageSize = DEFAULT_PAGE_SIZE,
-    cursor?: QueryDocumentSnapshot<DocumentData> | null
+    pageSize = 15
   ): Promise<ServiceResult<SearchResultPage>> {
-    return handleServiceCall(async () => {
-      const constraints = [];
+    try {
+      const params = new URLSearchParams();
+      if (filters.searchTerm) params.set("searchTerm", filters.searchTerm);
+      if (filters.skill) params.set("skill", filters.skill);
+      if (filters.department) params.set("department", filters.department);
+      if (filters.semester) params.set("semester", filters.semester);
+      params.set("pageSize", String(pageSize));
 
-      constraints.push(where("profileCompleted", "==", true));
+      const response = await fetch(`/api/search?${params.toString()}`);
+      const data = await response.json();
 
-      // 1. Filter by Skill
-      if (filters.skill && filters.skill.trim().length > 0) {
-        constraints.push(where("skillsOffered", "array-contains", filters.skill.trim()));
+      if (!response.ok) {
+        return {
+          data: null,
+          error: {
+            userMessage: data.error || "Failed to search student profiles.",
+            code: "search_error",
+            message: data.error || "Failed to search student profiles.",
+            statusCode: response.status,
+          },
+        };
       }
-      // 2. Filter by Department
-      else if (filters.department && filters.department.trim().length > 0) {
-        constraints.push(where("department", "==", filters.department.trim()));
-      }
-      // 3. Filter by Semester
-      else if (filters.semester && filters.semester.trim().length > 0) {
-        constraints.push(where("semester", "==", filters.semester.trim()));
-      }
-      // 4. Keyword / Name Search
-      else if (filters.searchTerm && filters.searchTerm.trim().length > 0) {
-        const term = filters.searchTerm.trim().toLowerCase();
-        constraints.push(where("searchKeywords", "array-contains", term));
-      }
-
-      // Cursor Pagination Constraints
-      if (cursor) {
-        constraints.push(startAfter(cursor));
-      }
-
-      constraints.push(limit(pageSize + 1)); // Fetch 1 extra to check hasMore
-
-      const q = query(collection(db, USERS_COLLECTION), ...constraints);
-      const querySnapshot = await getDocs(q);
-
-      const docs = querySnapshot.docs;
-      const hasMore = docs.length > pageSize;
-      const resultDocs = hasMore ? docs.slice(0, pageSize) : docs;
-
-      const users = resultDocs.map((docSnap) => ({
-        uid: docSnap.id,
-        ...docSnap.data(),
-      })) as UserDocument[];
-
-      const lastDoc = resultDocs.length > 0 ? resultDocs[resultDocs.length - 1] : null;
 
       return {
-        users,
-        lastDoc,
-        hasMore,
+        data: {
+          users: data.users || [],
+          lastDoc: null,
+          hasMore: data.hasMore || false,
+        },
+        error: null,
       };
-    }, "Failed to search student profiles.");
+    } catch (error) {
+      return {
+        data: null,
+        error: {
+          userMessage: "Failed to search student profiles.",
+          code: "search_error",
+          message: error instanceof Error ? error.message : "Unknown error",
+          statusCode: 500,
+        },
+      };
+    }
   },
 };

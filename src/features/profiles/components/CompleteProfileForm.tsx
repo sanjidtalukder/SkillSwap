@@ -217,7 +217,7 @@ export function CompleteProfileForm() {
     setIsSubmitting(true);
     setError(null);
 
-    const saveResult = await profileService.saveCompletedProfile(user, result.data);
+    const saveResult = await profileService.saveCompletedProfile(user.uid, result.data);
     setIsSubmitting(false);
 
     if (saveResult.error) {

@@ -46,7 +46,8 @@ export function useProfileRedirect(
       (routeResult.data.profileCompleted && redirectWhenComplete) ||
       (!routeResult.data.profileCompleted && redirectWhenIncomplete)
     ) {
-      router.replace(routeResult.data.route);
+      const targetRoute = profileRoutingService.getRouteForStatus(routeResult.data);
+      router.replace(targetRoute);
     }
 
     setIsCheckingProfile(false);

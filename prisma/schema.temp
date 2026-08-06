@@ -1,0 +1,10 @@
+// Search keyword model for full-text search
+model SearchKeyword {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  keyword   String
+
+  @@index([userId])
+  @@index([keyword])
+}

@@ -1,80 +1,103 @@
-import { db } from "@/firebase";
-import {
-  collection,
-  query,
-  where,
-  orderBy,
-  limit,
-  onSnapshot,
-  doc,
-  updateDoc,
-  writeBatch,
-  Unsubscribe,
-} from "firebase/firestore";
-import { NotificationDocument } from "@/types/firestore";
-import { handleServiceCall, ServiceResult } from "@/services/baseService";
-
-const NOTIFICATIONS_COLLECTION = "notifications";
-const MAX_NOTIFICATIONS = 20; // Bounded limit to optimize Firestore read bandwidth
+/**
+ * Client-safe notificationService.
+ * All DB operations go through API routes — NO Prisma, NO server imports.
+ */
+import { ServiceResult } from "@/services/baseService";
 
 export const notificationService = {
-  /**
-   * Subscribes to real-time notifications for a specific recipient user.
-   * Uses bounded queries (limit 20) and returns an unsubscribe function to prevent memory leaks.
-   */
-  subscribeToNotifications(
+  async subscribeToNotifications(
     userId: string,
-    onData: (notifications: NotificationDocument[]) => void,
+    onData: (notifications: any[]) => void,
     onError?: (err: Error) => void
-  ): Unsubscribe {
-    const q = query(
-      collection(db, NOTIFICATIONS_COLLECTION),
-      where("recipientId", "==", userId),
-      orderBy("createdAt", "desc"),
-      limit(MAX_NOTIFICATIONS)
-    );
-
-    return onSnapshot(
-      q,
-      (snapshot) => {
-        const items = snapshot.docs.map((docSnap) => ({
-          notificationId: docSnap.id,
-          ...docSnap.data(),
-        })) as NotificationDocument[];
-        onData(items);
-      },
-      (error) => {
-        console.error("[Notification Listener Error]:", error);
-        if (onError) onError(error);
+  ) {
+    try {
+      const response = await fetch(`/api/notifications?userId=${encodeURIComponent(userId)}`);
+      if (!response.ok) {
+        const data = await response.json();
+        onError?.(new Error(data.error || "Failed to fetch notifications"));
+        return () => {};
       }
-    );
+      const data = await response.json();
+      onData(data.notifications || []);
+    } catch (error) {
+      onError?.(error instanceof Error ? error : new Error("Failed to fetch notifications"));
+    }
+
+    // Return a no-op unsubscribe function (polling not implemented)
+    return () => {};
   },
 
-  /**
-   * Marks a single notification as read.
-   */
   async markAsRead(notificationId: string): Promise<ServiceResult<void>> {
-    return handleServiceCall(async () => {
-      const docRef = doc(db, NOTIFICATIONS_COLLECTION, notificationId);
-      await updateDoc(docRef, { read: true });
-    }, "Failed to mark notification as read.");
-  },
-
-  /**
-   * Batch marks all unread notifications as read for a specific user.
-   */
-  async markAllAsRead(notifications: NotificationDocument[]): Promise<ServiceResult<void>> {
-    return handleServiceCall(async () => {
-      const unreadItems = notifications.filter((item) => !item.read);
-      if (unreadItems.length === 0) return;
-
-      const batch = writeBatch(db);
-      unreadItems.forEach((item) => {
-        const docRef = doc(db, NOTIFICATIONS_COLLECTION, item.notificationId);
-        batch.update(docRef, { read: true });
+    try {
+      const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}/read`, {
+        method: "PATCH",
       });
 
-      await batch.commit();
-    }, "Failed to mark all notifications as read.");
+      if (!response.ok) {
+        const data = await response.json();
+        return {
+          data: null,
+          error: {
+            userMessage: data.error || "Failed to mark notification as read.",
+            code: "notification_error",
+            message: data.error || "Failed to mark notification as read.",
+            statusCode: response.status,
+          },
+        };
+      }
+
+      return { data: undefined, error: null };
+    } catch (error) {
+      return {
+        data: null,
+        error: {
+          userMessage: "Failed to mark notification as read.",
+          code: "notification_error",
+          message: error instanceof Error ? error.message : "Unknown error",
+          statusCode: 500,
+        },
+      };
+    }
+  },
+
+  async markAllAsRead(notifications: any[]): Promise<ServiceResult<void>> {
+    try {
+      const unreadIds = notifications
+        .filter((n) => !n.read)
+        .map((n) => n.id || n.notificationId);
+
+      if (unreadIds.length === 0) return { data: undefined, error: null };
+
+      const response = await fetch("/api/notifications/read-all", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: unreadIds }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        return {
+          data: null,
+          error: {
+            userMessage: data.error || "Failed to mark all notifications as read.",
+            code: "notification_error",
+            message: data.error || "Failed to mark all notifications as read.",
+            statusCode: response.status,
+          },
+        };
+      }
+
+      return { data: undefined, error: null };
+    } catch (error) {
+      return {
+        data: null,
+        error: {
+          userMessage: "Failed to mark all notifications as read.",
+          code: "notification_error",
+          message: error instanceof Error ? error.message : "Unknown error",
+          statusCode: 500,
+        },
+      };
+    }
   },
 };

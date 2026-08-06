@@ -1,43 +1,75 @@
 import { User } from "firebase/auth";
 import { ROUTES } from "@/constants";
 import { ServiceResult } from "@/services/baseService";
-import { profileService } from "@/features/profiles/services/profileService";
 
 export interface ProfileRouteStatus {
   profileCompleted: boolean;
-  route: typeof ROUTES.DASHBOARD | typeof ROUTES.COMPLETE_PROFILE;
 }
 
 export const profileRoutingService = {
   async getRouteForUser(user: User): Promise<ServiceResult<ProfileRouteStatus>> {
-    let profileResult = await profileService.getProfile(user.uid);
-    if (profileResult.error) {
-      return { data: null, error: profileResult.error };
-    }
+    try {
+      const response = await fetch(`/api/db/profile?uid=${user.uid}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          // Profile doesn't exist, ensure profile shell
+          const ensureResponse = await fetch("/api/db/profile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              firebaseUid: user.uid,
+              email: user.email,
+              name: user.displayName || user.email?.split("@")[0] || "SkillSwap Member"
+            })
+          });
 
-    if (!profileResult.data) {
-      const shellResult = await profileService.ensureProfileShell(user);
-      if (shellResult.error) {
-        return { data: null, error: shellResult.error };
+          if (!ensureResponse.ok) {
+            const errorData = await ensureResponse.json();
+            const msg = errorData.error || "Failed to create profile";
+            return {
+              data: null,
+              error: {
+                userMessage: msg,
+                code: "profile_create_error",
+                message: msg,
+                statusCode: ensureResponse.status
+              }
+            };
+          }
+
+          return { data: { profileCompleted: false }, error: null };
+        }
+
+        const errorData = await response.json();
+        const msg = errorData.error || "Failed to check profile";
+        return {
+          data: null,
+          error: {
+            userMessage: msg,
+            code: "profile_check_error",
+            message: msg,
+            statusCode: response.status
+          }
+        };
       }
 
+      const profileData = await response.json();
+      return { data: { profileCompleted: profileData.data.profileCompleted }, error: null };
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Failed to check profile status";
       return {
-        data: {
-          profileCompleted: false,
-          route: ROUTES.COMPLETE_PROFILE,
-        },
-        error: null,
+        data: null,
+        error: {
+          userMessage: msg,
+          code: "profile_status_error",
+          message: msg,
+          statusCode: 500
+        }
       };
     }
-
-    const profileCompleted = Boolean(profileResult.data.profileCompleted);
-
-    return {
-      data: {
-        profileCompleted,
-        route: profileCompleted ? ROUTES.DASHBOARD : ROUTES.COMPLETE_PROFILE,
-      },
-      error: null,
-    };
   },
+
+  getRouteForStatus(status: ProfileRouteStatus): string {
+    return status.profileCompleted ? ROUTES.DASHBOARD : ROUTES.COMPLETE_PROFILE;
+  }
 };

@@ -13,11 +13,12 @@ import { authService } from "@/features/auth/services/authService";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { profileRoutingService } from "@/features/profiles/services/profileRoutingService";
 import { getErrorMessage } from "@/utils/errorHandler";
+import { z } from "zod";
 
 type AuthMode = "login" | "register";
 
 interface AuthFormProps {
-  mode: AuthMode;
+  mode?: AuthMode;
 }
 
 interface FormState {
@@ -34,7 +35,7 @@ const initialFormState: FormState = {
   confirmPassword: "",
 };
 
-export function AuthForm({ mode }: AuthFormProps) {
+export function AuthForm({ mode = "login" }: AuthFormProps) {
   const router = useRouter();
   const { isAuthenticated, loading: authLoading } = useAuth();
   const [form, setForm] = useState(initialFormState);
@@ -56,7 +57,8 @@ export function AuthForm({ mode }: AuthFormProps) {
         return;
       }
 
-      router.replace(routeResult.data.route);
+      const route = routeResult.data.profileCompleted ? ROUTES.DASHBOARD : ROUTES.COMPLETE_PROFILE;
+      router.replace(route);
     }
     void routeAuthenticatedUser();
   }, [authLoading, isAuthenticated, router]);
@@ -75,6 +77,19 @@ export function AuthForm({ mode }: AuthFormProps) {
       if (isRegister) {
         const payload = registerSchema.parse(form);
         await authService.register(payload);
+        // After registration, ensure profile shell
+        const currentUser = authService.getCurrentUser();
+        if (currentUser) {
+          await fetch("/api/db/profile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              firebaseUid: currentUser.uid,
+              email: currentUser.email,
+              name: currentUser.displayName || currentUser.email?.split("@")[0] || "SkillSwap Member"
+            })
+          });
+        }
         router.replace(ROUTES.COMPLETE_PROFILE);
         return;
       } else {
@@ -88,8 +103,8 @@ export function AuthForm({ mode }: AuthFormProps) {
           setError(routeResult.error?.userMessage || "Failed to check your profile.");
           return;
         }
-
-        router.replace(routeResult.data.route);
+        const route = routeResult.data.profileCompleted ? ROUTES.DASHBOARD : ROUTES.COMPLETE_PROFILE;
+        router.replace(route);
         return;
       }
     } catch (submitError) {

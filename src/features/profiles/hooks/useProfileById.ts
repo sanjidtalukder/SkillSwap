@@ -1,8 +1,6 @@
-"use client";
-
 import { useCallback, useEffect, useState } from "react";
 import { UserProfile } from "@/features/profiles/types/profile";
-import { profileService } from "@/features/profiles/services/profileService";
+import { getProfileAction } from "@/features/profiles/actions/profile.actions";
 
 export function useProfileById(uid: string | null, enabled = true) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -24,15 +22,20 @@ export function useProfileById(uid: string | null, enabled = true) {
     setIsLoading(true);
     setError(null);
 
-    const result = await profileService.getProfile(uid);
-    if (result.error) {
-      setError(result.error.userMessage);
+    try {
+      const result = await getProfileAction(uid);
+      if (result.error) {
+        setError(result.error);
+        setProfile(null);
+      } else {
+        setProfile(result.data || null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch profile");
       setProfile(null);
-    } else {
-      setProfile(result.data);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   }, [enabled, uid]);
 
   useEffect(() => {

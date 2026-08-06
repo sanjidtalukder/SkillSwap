@@ -74,7 +74,7 @@ export function SkillSelector({
     setError(null);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.MouseEvent | React.KeyboardEvent) => {
     event.preventDefault();
     addSkill(query);
   };
@@ -86,7 +86,7 @@ export function SkillSelector({
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       </div>
 
-      <form className="flex flex-col gap-3 sm:flex-row" onSubmit={handleSubmit}>
+      <div className="flex flex-col gap-3 sm:flex-row">
         <label className="relative flex-1">
           <span className="sr-only">{label}</span>
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -96,15 +96,25 @@ export function SkillSelector({
               setQuery(event.target.value);
               setError(null);
             }}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                event.preventDefault();
+                handleSubmit(event as any);
+              }
+            }}
             className="h-11 w-full rounded-lg border border-input bg-background/70 pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/30"
             placeholder="Search or type a skill"
           />
         </label>
-        <Button type="submit" variant="outline">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={(event) => handleSubmit(event as any)}
+        >
           <Plus className="h-4 w-4" />
           Add
         </Button>
-      </form>
+      </div>
 
       {query.trim() && filteredSuggestions.length > 0 && (
         <div className="flex flex-wrap gap-2">

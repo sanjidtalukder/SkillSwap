@@ -1,0 +1,45 @@
+{
+  "name": "init",
+  "timestamp": "2026-08-06T12:00:00.000Z",
+  "primarySchema": "public",
+  "schemas": {
+    "public": {
+      "models": {
+        "User": {
+          "fields": {
+            "id": "String",
+            "firebaseUid": "String",
+            "email": "String",
+            "createdAt": "DateTime",
+            "updatedAt": "DateTime"
+          }
+        },
+        "Profile": {
+          "fields": {
+            "id": "String",
+            "userId": "String",
+            "fullName": "String",
+            "university": "String",
+            "department": "String",
+            "semester": "String",
+            "bio": "String",
+            "photo": "String",
+            "location": "String",
+            "availability": "String",
+            "github": "String",
+            "linkedin": "String",
+            "portfolio": "String",
+            "experience": "String",
+            "profileCompleted": "Boolean",
+            "rating": "Float",
+            "completedSwaps": "Int",
+            "isOnline": "Boolean",
+            "searchKeywords": "String",
+            "createdAt": "DateTime",
+            "updatedAt": "DateTime"
+          }
+        }
+      }
+    }
+  }
+}

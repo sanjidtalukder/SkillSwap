@@ -1,8 +1,6 @@
-"use client";
-
 import { useCallback, useEffect, useState } from "react";
 import { UserProfile } from "@/features/profiles/types/profile";
-import { profileService } from "@/features/profiles/services/profileService";
+import { listCompletedProfilesAction } from "@/features/profiles/actions/profile.actions";
 
 export function useCompletedProfiles(enabled = true) {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
@@ -18,15 +16,20 @@ export function useCompletedProfiles(enabled = true) {
     setIsLoading(true);
     setError(null);
 
-    const result = await profileService.listCompletedProfiles();
-    if (result.error) {
-      setError(result.error.userMessage);
+    try {
+      const result = await listCompletedProfilesAction();
+      if (result.error) {
+        setError(result.error);
+        setProfiles([]);
+      } else {
+        setProfiles(result.data || []);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch profiles");
       setProfiles([]);
-    } else {
-      setProfiles(result.data ?? []);
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsLoading(false);
   }, [enabled]);
 
   useEffect(() => {

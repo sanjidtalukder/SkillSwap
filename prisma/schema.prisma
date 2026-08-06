@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                    String               @id @default(cuid())
+  firebaseUid           String
+  email                 String
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @default(now()) @updatedAt
+  receivedMatchRequests MatchRequest[]       @relation("Receiver")
+  sentMatchRequests     MatchRequest[]       @relation("Sender")
+  messages              Message[]
+  receivedNotifications Notification[]       @relation("RecipientNotifications")
+  sentNotifications     Notification[]       @relation("SenderNotifications")
+  profile               Profile?
+  ownedProjects         Project[]            @relation("ProjectOwner")
+  projectMembers        ProjectMember[]
+  keywords              SearchKeyword[]
+  UserSkill             UserSkill[]
+  UserSkillNeed         UserSkillNeed[]
+  ConversationToUser    ConversationToUser[]
+}
+
+model Profile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  fullName         String
+  university       String
+  department       String
+  semester         String
+  bio              String
+  photo            String
+  location         String
+  availability     String
+  github           String?
+  linkedin         String?
+  portfolio        String?
+  experience       String
+  profileCompleted Boolean  @default(false)
+  rating           Float    @default(5.0)
+  completedSwaps   Int      @default(0)
+  isOnline         Boolean  @default(true)
+  searchKeywords   String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now()) @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SearchKeyword {
+  id      String @id @default(cuid())
+  userId  String
+  keyword String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Skill {
+  id            String          @id @default(cuid())
+  name          String          @unique
+  category      String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @default(now()) @updatedAt
+  UserSkill     UserSkill[]
+  UserSkillNeed UserSkillNeed[]
+}
+
+model Project {
+  id          String          @id @default(cuid())
+  title       String
+  description String
+  ownerId     String
+  status      String          @default("active")
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @default(now()) @updatedAt
+  owner       User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     ProjectMember[]
+}
+
+model ProjectMember {
+  id        String  @id @default(cuid())
+  projectId String
+  userId    String
+  role      String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model MatchRequest {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+  receiver   User     @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User     @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+}
+
+model Conversation {
+  id                 String               @id @default(cuid())
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @default(now()) @updatedAt
+  messages           Message[]
+  ConversationToUser ConversationToUser[]
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  message        String
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  recipientId String
+  senderId    String?
+  type        String
+  title       String
+  body        String
+  linkUrl     String?
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  recipient   User     @relation("RecipientNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender      User?    @relation("SenderNotifications", fields: [senderId], references: [id])
+}
+
+model UserSkill {
+  id      String  @id
+  userId  String
+  skillId String
+  level   String?
+  Skill   Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  User    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+}
+
+model UserSkillNeed {
+  id      String @id
+  userId  String
+  skillId String
+  Skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  User    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+}
+
+model ConversationToUser {
+  A            String
+  B            String
+  Conversation Conversation @relation(fields: [A], references: [id], onDelete: Cascade)
+  User         User         @relation(fields: [B], references: [id], onDelete: Cascade)
+
+  @@unique([A, B], map: "_ConversationToUser_AB_unique")
+  @@map("_ConversationToUser")
+}
