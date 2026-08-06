@@ -62,7 +62,8 @@ export async function getProfile(uid: string): Promise<UserProfile | null> {
     include: {
       profile: true,
       skillsHave: { include: { skill: true } },
-      skillsNeed: { include: { skill: true } }
+      skillsNeed: { include: { skill: true } },
+      keywords: true,
     }
   });
 
@@ -103,10 +104,7 @@ export async function getProfile(uid: string): Promise<UserProfile | null> {
   };
 
   // Add search keywords
-  const keywords = await prisma.searchKeyword.findMany({
-    where: { userId: uid }
-  });
-  profile.searchKeywords = keywords.map(k => k.keyword);
+  profile.searchKeywords = user.keywords.map(k => k.keyword);
 
   return profile;
 }
@@ -233,10 +231,34 @@ export async function listCompletedProfiles(): Promise<UserProfile[]> {
         profileCompleted: true
       }
     },
-    include: {
-      profile: true,
-      skillsHave: { include: { skill: true } },
-      skillsNeed: { include: { skill: true } }
+    select: {
+      id: true,
+      firebaseUid: true,
+      email: true,
+      profile: {
+        select: {
+          fullName: true,
+          photo: true,
+          university: true,
+          department: true,
+          semester: true,
+          location: true,
+          bio: true,
+          experience: true,
+          availability: true,
+          profileCompleted: true,
+          rating: true,
+          completedSwaps: true,
+          isOnline: true,
+          createdAt: true,
+          updatedAt: true,
+          github: true,
+          linkedin: true,
+          portfolio: true
+        }
+      },
+      skillsHave: { select: { skill: { select: { name: true } } } },
+      skillsNeed: { select: { skill: { select: { name: true } } } },
     },
     orderBy: {
       profile: { updatedAt: "desc" }

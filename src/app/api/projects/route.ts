@@ -1,29 +1,76 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma.server";
 import { verifyAuth } from "@/utils/auth";
+import { Prisma } from "@prisma/client";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search");
+    const category = searchParams.get("category");
+    const difficulty = searchParams.get("difficulty");
+    const status = searchParams.get("status") || "active";
+
+    const where: Prisma.ProjectWhereInput = { status };
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { requiredSkills: { hasSome: [search] } },
+        { technologies: { hasSome: [search] } },
+      ];
+    }
+    if (category) where.category = category;
+    if (difficulty) where.difficulty = difficulty;
+
     const projects = await prisma.project.findMany({
-      include: {
+      where,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        category: true,
+        requiredSkills: true,
+        technologies: true,
+        teamSize: true,
+        difficulty: true,
+        deadline: true,
+        status: true,
+        createdAt: true,
         owner: {
-          include: {
-            profile: true,
-          },
+          select: {
+            firebaseUid: true,
+            profile: {
+              select: {
+                fullName: true,
+                photo: true,
+              }
+            }
+          }
         },
+        _count: {
+          select: { members: true }
+        }
       },
       orderBy: { createdAt: "desc" },
     });
 
-    // Map projects to a client-friendly format
     const formattedProjects = projects.map((p) => ({
       id: p.id,
       title: p.title,
       description: p.description,
+      category: p.category,
+      requiredSkills: p.requiredSkills,
+      technologies: p.technologies,
+      teamSize: p.teamSize,
+      difficulty: p.difficulty,
+      deadline: p.deadline,
       status: p.status,
-      ownerId: p.ownerId,
+      ownerId: p.owner.firebaseUid,
       ownerName: p.owner.profile?.fullName || "SkillSwap Member",
       ownerPhoto: p.owner.profile?.photo || "",
+      currentMembers: p._count.members,
       createdAt: p.createdAt,
     }));
 
@@ -39,7 +86,8 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { user } = await verifyAuth(request);
-    const { title, description } = await request.json();
+    const body = await request.json();
+    const { title, description, category, requiredSkills, technologies, teamSize, difficulty, deadline } = body;
 
     if (!title || !description) {
       return NextResponse.json({ success: false, error: "Title and description are required" }, { status: 400 });
@@ -49,6 +97,12 @@ export async function POST(request: Request) {
       data: {
         title,
         description,
+        category: category || "Other",
+        requiredSkills: Array.isArray(requiredSkills) ? requiredSkills : [],
+        technologies: Array.isArray(technologies) ? technologies : [],
+        teamSize: typeof teamSize === "number" ? teamSize : 2,
+        difficulty: difficulty || "Intermediate",
+        deadline: deadline ? new Date(deadline) : null,
         ownerId: user!.id,
       },
     });
