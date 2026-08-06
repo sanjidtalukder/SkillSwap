@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma.server";
+import { verifyAuth } from "@/utils/auth";
 
 export async function POST(request: Request) {
   try {
-    const { requesterId, requesterName, requesterPhoto, recipientId } = await request.json();
+    const { user } = await verifyAuth(request);
+    const requesterId = user!.id;
+    
+    const { recipientId } = await request.json();
 
-    if (!requesterId || !recipientId) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!recipientId) {
+      return NextResponse.json({ error: "Missing recipient ID" }, { status: 400 });
     }
 
     if (requesterId === recipientId) {
@@ -40,13 +44,17 @@ export async function POST(request: Request) {
     });
 
     // Create notification
+    // Use the requester's name directly from their database profile rather than the request payload
+    const profile = await prisma.profile.findUnique({ where: { userId: requesterId } });
+    const requesterName = profile?.fullName || "A student";
+
     await prisma.notification.create({
       data: {
         recipientId,
         senderId: requesterId,
         type: "connection_request",
         title: "New connection request",
-        body: `${requesterName || "A student"} wants to connect for a skill swap.`,
+        body: `${requesterName} wants to connect for a skill swap.`,
         linkUrl: `/profile/${requesterId}`,
       },
     });
@@ -55,7 +63,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+      { status: error instanceof Error && error.message === "Unauthorized" ? 401 : 500 }
     );
   }
 }

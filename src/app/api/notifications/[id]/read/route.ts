@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma.server";
+import { verifyAuth } from "@/utils/auth";
 
 export async function PATCH(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -12,6 +13,15 @@ export async function PATCH(
   }
 
   try {
+    const { user } = await verifyAuth(request);
+    const userId = user!.id;
+
+    // Verify ownership
+    const notification = await prisma.notification.findUnique({ where: { id } });
+    if (!notification || notification.recipientId !== userId) {
+      return NextResponse.json({ error: "Notification not found or unauthorized" }, { status: 403 });
+    }
+
     await prisma.notification.update({
       where: { id },
       data: { read: true },

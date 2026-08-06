@@ -80,11 +80,11 @@ export function AuthForm({ mode = "login" }: AuthFormProps) {
         // After registration, ensure profile shell
         const currentUser = authService.getCurrentUser();
         if (currentUser) {
-          await fetch("/api/db/profile", {
+          const { fetchWithAuth } = await import("@/lib/api-client");
+          await fetchWithAuth("/api/db/profile", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              firebaseUid: currentUser.uid,
               email: currentUser.email,
               name: currentUser.displayName || currentUser.email?.split("@")[0] || "SkillSwap Member"
             })

@@ -17,9 +17,6 @@ export function useConnectionRequest(user: User | null) {
     setPendingRecipientId(recipientId);
 
     const result = await connectionService.sendConnectionRequest({
-      requesterId: user.uid,
-      requesterName: user.displayName || user.email || "SkillSwap Member",
-      requesterPhoto: user.photoURL || "",
       recipientId,
     });
 

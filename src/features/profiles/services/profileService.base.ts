@@ -3,6 +3,7 @@
  * All DB operations go through API routes — NO Prisma, NO server imports.
  */
 import { ServiceResult } from "@/services/baseService";
+import { fetchWithAuth } from "@/lib/api-client";
 
 export const profileService = {
   async ensureProfileShell(user: {
@@ -11,11 +12,10 @@ export const profileService = {
     displayName: string | null;
   }): Promise<ServiceResult<void>> {
     try {
-      const response = await fetch("/api/db/profile", {
+      const response = await fetchWithAuth("/api/db/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firebaseUid: user.uid,
           email: user.email,
           name: user.displayName || user.email?.split("@")[0] || "SkillSwap Member",
         }),

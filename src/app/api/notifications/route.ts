@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma.server";
+import { verifyAuth } from "@/utils/auth";
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get("userId");
-
-  if (!userId) {
-    return NextResponse.json({ error: "Missing userId" }, { status: 400 });
-  }
-
   try {
+    const { user } = await verifyAuth(request);
+    const userId = user!.id;
+
     const notifications = await prisma.notification.findMany({
       where: { recipientId: userId },
       orderBy: { createdAt: "desc" },
@@ -20,7 +17,7 @@ export async function GET(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+      { status: error instanceof Error && error.message === "Unauthorized" ? 401 : 500 }
     );
   }
 }

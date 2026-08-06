@@ -1,6 +1,7 @@
 import { User } from "firebase/auth";
 import { ROUTES } from "@/constants";
 import { ServiceResult } from "@/services/baseService";
+import { fetchWithAuth } from "@/lib/api-client";
 
 export interface ProfileRouteStatus {
   profileCompleted: boolean;
@@ -9,15 +10,14 @@ export interface ProfileRouteStatus {
 export const profileRoutingService = {
   async getRouteForUser(user: User): Promise<ServiceResult<ProfileRouteStatus>> {
     try {
-      const response = await fetch(`/api/db/profile?uid=${user.uid}`);
+      const response = await fetchWithAuth(`/api/db/profile?uid=${user.uid}`);
       if (!response.ok) {
         if (response.status === 404) {
           // Profile doesn't exist, ensure profile shell
-          const ensureResponse = await fetch("/api/db/profile", {
+          const ensureResponse = await fetchWithAuth("/api/db/profile", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              firebaseUid: user.uid,
               email: user.email,
               name: user.displayName || user.email?.split("@")[0] || "SkillSwap Member"
             })

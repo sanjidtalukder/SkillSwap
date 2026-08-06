@@ -58,7 +58,7 @@ export async function ensureProfileShell(firebaseUid: string, email: string, nam
 
 export async function getProfile(uid: string): Promise<UserProfile | null> {
   const user = await prisma.user.findUnique({
-    where: { id: uid },
+    where: { firebaseUid: uid },
     include: {
       profile: true,
       skillsHave: { include: { skill: true } },

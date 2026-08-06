@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ensureProfileShell, getProfile, saveCompletedProfile, listCompletedProfiles } from "./utils";
+import { verifyAuth } from "@/utils/auth";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -29,7 +30,10 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { firebaseUid, email, name, input } = await request.json();
+    const { email, name, input } = await request.json();
+    
+    // Ensure the request comes from an authenticated user and get their genuine UID
+    const { firebaseUid } = await verifyAuth(request, false);
 
     if (input) {
       // Save completed profile
@@ -44,7 +48,7 @@ export async function POST(request: Request) {
   } catch (error) {
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+      { status: error instanceof Error && error.message === "Unauthorized" ? 401 : 500 }
     );
   }
 }

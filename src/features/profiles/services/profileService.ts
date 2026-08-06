@@ -2,6 +2,8 @@ import { storage } from "@/firebase";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { ServiceResult } from "@/services/baseService";
 
+import { fetchWithAuth } from "@/lib/api-client";
+
 export const profileService = {
   async uploadProfilePhoto(uid: string, file: File): Promise<ServiceResult<string>> {
     try {
@@ -25,10 +27,10 @@ export const profileService = {
 
   async saveCompletedProfile(firebaseUid: string, input: any): Promise<ServiceResult<void>> {
     try {
-      const response = await fetch("/api/db/profile", {
+      const response = await fetchWithAuth("/api/db/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firebaseUid, input })
+        body: JSON.stringify({ input })
       });
 
       if (!response.ok) {

@@ -3,6 +3,7 @@
  * All DB operations go through API routes — NO Prisma, NO server imports.
  */
 import { ServiceResult } from "@/services/baseService";
+import { fetchWithAuth } from "@/lib/api-client";
 
 export const notificationService = {
   async subscribeToNotifications(
@@ -11,7 +12,7 @@ export const notificationService = {
     onError?: (err: Error) => void
   ) {
     try {
-      const response = await fetch(`/api/notifications?userId=${encodeURIComponent(userId)}`);
+      const response = await fetchWithAuth("/api/notifications");
       if (!response.ok) {
         const data = await response.json();
         onError?.(new Error(data.error || "Failed to fetch notifications"));
@@ -29,7 +30,7 @@ export const notificationService = {
 
   async markAsRead(notificationId: string): Promise<ServiceResult<void>> {
     try {
-      const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}/read`, {
+      const response = await fetchWithAuth(`/api/notifications/${encodeURIComponent(notificationId)}/read`, {
         method: "PATCH",
       });
 
@@ -68,7 +69,7 @@ export const notificationService = {
 
       if (unreadIds.length === 0) return { data: undefined, error: null };
 
-      const response = await fetch("/api/notifications/read-all", {
+      const response = await fetchWithAuth("/api/notifications/read-all", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: unreadIds }),

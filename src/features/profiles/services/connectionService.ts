@@ -3,18 +3,16 @@
  * All DB operations go through API routes — NO Prisma, NO server imports.
  */
 import { ServiceResult } from "@/services/baseService";
+import { fetchWithAuth } from "@/lib/api-client";
 
 interface ConnectionRequestParams {
-  requesterId: string;
-  requesterName: string;
-  requesterPhoto: string;
   recipientId: string;
 }
 
 export const connectionService = {
   async sendConnectionRequest(params: ConnectionRequestParams): Promise<ServiceResult<string>> {
     try {
-      const response = await fetch("/api/connections", {
+      const response = await fetchWithAuth("/api/connections", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { User } from "firebase/auth";
 import { UserProfile } from "@/features/profiles/types/profile";
 import { getProfileAction } from "@/features/profiles/actions/profile.actions";
+import { fetchWithAuth } from "@/lib/api-client";
 
 export function useCurrentProfile(user: User | null, authLoading: boolean) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -38,11 +39,10 @@ export function useCurrentProfile(user: User | null, authLoading: boolean) {
     if (!user) return { error: "No user authenticated" };
 
     try {
-      const response = await fetch("/api/db/profile", {
+      const response = await fetchWithAuth("/api/db/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firebaseUid: user.uid,
           email: user.email,
           name: user.displayName || user.email?.split("@")[0] || "SkillSwap Member"
         })
