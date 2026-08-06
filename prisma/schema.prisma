@@ -10,8 +10,8 @@ datasource db {
 
 model User {
   id                    String               @id @default(cuid())
-  firebaseUid           String
-  email                 String
+  firebaseUid           String               @unique
+  email                 String               @unique
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @default(now()) @updatedAt
   receivedMatchRequests MatchRequest[]       @relation("Receiver")
@@ -23,8 +23,8 @@ model User {
   ownedProjects         Project[]            @relation("ProjectOwner")
   projectMembers        ProjectMember[]
   keywords              SearchKeyword[]
-  UserSkill             UserSkill[]
-  UserSkillNeed         UserSkillNeed[]
+  skillsHave            UserSkill[]
+  skillsNeed            UserSkillNeed[]
   ConversationToUser    ConversationToUser[]
 }
 
@@ -61,13 +61,13 @@ model SearchKeyword {
 }
 
 model Skill {
-  id            String          @id @default(cuid())
-  name          String          @unique
-  category      String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @default(now()) @updatedAt
-  UserSkill     UserSkill[]
-  UserSkillNeed UserSkillNeed[]
+  id             String          @id @default(cuid())
+  name           String          @unique
+  category       String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now()) @updatedAt
+  userSkills     UserSkill[]
+  userSkillNeeds UserSkillNeed[]
 }
 
 model Project {
@@ -139,22 +139,22 @@ model Notification {
 }
 
 model UserSkill {
-  id      String  @id
+  id      String  @id @default(cuid())
   userId  String
   skillId String
   level   String?
-  Skill   Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  User    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill   Skill   @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, skillId])
 }
 
 model UserSkillNeed {
-  id      String @id
+  id      String @id @default(cuid())
   userId  String
   skillId String
-  Skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  User    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, skillId])
 }
