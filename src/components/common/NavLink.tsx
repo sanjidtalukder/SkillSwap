@@ -30,10 +30,10 @@ export function NavLink({ href, children, className, activePattern, ariaLabel }:
       href={href}
       aria-label={ariaLabel}
       className={cn(
-        "px-3 py-1.5 transition-all duration-200 text-sm",
+        "relative px-3 py-4 transition-all duration-200 text-sm font-medium flex items-center h-full hover:text-foreground",
         isActive 
-          ? "bg-primary text-primary-foreground font-semibold rounded-md shadow-[0_4px_14px_0_rgba(0,118,255,0.2)]" 
-          : "text-foreground/60 font-medium hover:text-foreground/90 hover:bg-muted/50 rounded-md",
+          ? "text-foreground after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-t-md" 
+          : "text-foreground/60",
         className
       )}
     >
