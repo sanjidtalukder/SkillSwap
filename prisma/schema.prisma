@@ -33,6 +33,8 @@ model User {
 model Profile {
   id               String   @id @default(cuid())
   userId           String   @unique
+  username         String   @unique
+  banner           String?  @default("")
   fullName         String
   university       String
   department       String

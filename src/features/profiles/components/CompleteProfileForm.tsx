@@ -24,6 +24,7 @@ import { Camera, Check, ChevronLeft, ChevronRight, Link as LinkIcon, Save } from
 interface ProfileFormState {
   name: string;
   photo: string;
+  banner: string;
   university: string;
   department: string;
   semester: string;
@@ -51,6 +52,7 @@ const MAX_PROFILE_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
 const initialState: ProfileFormState = {
   name: "",
   photo: "",
+  banner: "",
   university: "",
   department: "",
   semester: "",
@@ -87,6 +89,7 @@ export function CompleteProfileForm() {
     setForm({
       name: profile.name || user?.displayName || "",
       photo: profile.photo || user?.photoURL || "",
+      banner: profile.banner || "",
       university: profile.university || "",
       department: profile.department || "",
       semester: profile.semester || "",
@@ -133,6 +136,7 @@ export function CompleteProfileForm() {
           location: true,
           bio: true,
           photo: true,
+          banner: true,
         })
         .safeParse(form);
       if (!result.success) {
@@ -310,6 +314,11 @@ export function CompleteProfileForm() {
                     label="Full Name"
                     value={form.name}
                     onChange={(value) => updateField("name", value)}
+                  />
+                  <TextField
+                    label="Banner Image URL (Optional)"
+                    value={form.banner}
+                    onChange={(value) => updateField("banner", value)}
                   />
                   <TextField
                     label="University"

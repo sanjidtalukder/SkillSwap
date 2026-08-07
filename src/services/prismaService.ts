@@ -34,6 +34,8 @@ function profileFromPrisma(user: User & { profile?: Profile | null }, profile?: 
     uid: user.id,
     firebaseUID: user.firebaseUid,
     name: profileData.fullName || "",
+    username: profileData.username || "",
+    banner: profileData.banner || "",
     email: user.email || "",
     photo: profileData.photo || "",
     university: profileData.university || "",
@@ -81,6 +83,8 @@ export const userService = {
         profile: {
           create: {
             fullName: name,
+            username: name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.floor(Math.random() * 10000),
+            banner: "",
             university: "",
             department: "",
             semester: "",
@@ -167,6 +171,8 @@ export const profileService = {
         create: {
           userId: dbUser.id,
           fullName: name,
+          username: name.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Math.floor(Math.random() * 10000),
+          banner: "",
           university: input.university.trim(),
           department: input.department.trim(),
           semester: input.semester.trim(),

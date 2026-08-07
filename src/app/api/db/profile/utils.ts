@@ -22,12 +22,26 @@ function normalizeSkills(skills: string[]) {
     .slice(0, MAX_PROFILE_SKILLS);
 }
 
+async function generateUniqueUsername(fullName: string): Promise<string> {
+  const base = fullName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || "user";
+  let username = base;
+  let counter = 1;
+  while (true) {
+    const exists = await prisma.profile.findUnique({ where: { username } });
+    if (!exists) return username;
+    counter++;
+    username = `${base}-${counter}`;
+  }
+}
+
 export async function ensureProfileShell(firebaseUid: string, email: string, name: string) {
   const existingUser = await prisma.user.findUnique({
     where: { firebaseUid }
   });
 
   if (existingUser) return existingUser;
+
+  const username = await generateUniqueUsername(name);
 
   return await prisma.user.create({
     data: {
@@ -36,6 +50,8 @@ export async function ensureProfileShell(firebaseUid: string, email: string, nam
       profile: {
         create: {
           fullName: name,
+          username,
+          banner: "",
           university: "",
           department: "",
           semester: "",
@@ -57,8 +73,8 @@ export async function ensureProfileShell(firebaseUid: string, email: string, nam
 }
 
 export async function getProfile(uid: string): Promise<UserProfile | null> {
-  const user = await prisma.user.findUnique({
-    where: { firebaseUid: uid },
+  const user = await prisma.user.findFirst({
+    where: { OR: [{ firebaseUid: uid }, { id: uid }] },
     include: {
       profile: true,
       skillsHave: { include: { skill: true } },
@@ -76,6 +92,8 @@ export async function getProfile(uid: string): Promise<UserProfile | null> {
     uid: user.id,
     firebaseUID: user.firebaseUid,
     name: user.profile?.fullName || "",
+    username: user.profile?.username || "",
+    banner: user.profile?.banner || "",
     email: user.email || "",
     photo: user.profile?.photo || "",
     university: user.profile?.university || "",
@@ -109,11 +127,75 @@ export async function getProfile(uid: string): Promise<UserProfile | null> {
   return profile;
 }
 
+export async function getProfileByUsername(username: string): Promise<(UserProfile & { ownedProjects: any[] }) | null> {
+  const profileRecord = await prisma.profile.findUnique({
+    where: { username },
+    include: {
+      user: {
+        include: {
+          skillsHave: { include: { skill: true } },
+          skillsNeed: { include: { skill: true } },
+          keywords: true,
+          ownedProjects: {
+            include: {
+              members: { include: { user: { include: { profile: true } } } }
+            },
+            orderBy: { createdAt: "desc" }
+          }
+        }
+      }
+    }
+  });
+
+  if (!profileRecord || !profileRecord.user) return null;
+
+  const user = profileRecord.user;
+  const experience: ExperienceLevel = (profileRecord.experience as ExperienceLevel) || "Beginner";
+  const availability: Availability = (profileRecord.availability as Availability) || "Part Time";
+
+  const profile: UserProfile & { ownedProjects: any[] } = {
+    uid: user.id,
+    firebaseUID: user.firebaseUid,
+    name: profileRecord.fullName || "",
+    username: profileRecord.username || "",
+    banner: profileRecord.banner || "",
+    email: user.email || "",
+    photo: profileRecord.photo || "",
+    university: profileRecord.university || "",
+    department: profileRecord.department || "",
+    semester: profileRecord.semester || "",
+    location: profileRecord.location || "",
+    bio: profileRecord.bio || "",
+    skillsHave: user.skillsHave.map(us => us.skill.name),
+    skillsNeed: user.skillsNeed.map(us => us.skill.name),
+    github: profileRecord.github || "",
+    linkedin: profileRecord.linkedin || "",
+    portfolio: profileRecord.portfolio || "",
+    experience,
+    availability,
+    profileCompleted: profileRecord.profileCompleted || false,
+    createdAt: profileRecord.createdAt as any || new Date(),
+    updatedAt: profileRecord.updatedAt as any || new Date(),
+    fullName: profileRecord.fullName || "",
+    avatarUrl: profileRecord.photo || "",
+    skillsOffered: user.skillsHave.map(us => us.skill.name),
+    skillsWanted: user.skillsNeed.map(us => us.skill.name),
+    searchKeywords: user.keywords.map(k => k.keyword),
+    rating: profileRecord.rating || 5.0,
+    completedSwaps: profileRecord.completedSwaps || 0,
+    isOnline: profileRecord.isOnline || false,
+    ownedProjects: user.ownedProjects,
+  };
+
+  return profile;
+}
+
 export async function saveCompletedProfile(firebaseUid: string, input: any) {
   const skillsHave = normalizeSkills(input.skillsHave);
   const skillsNeed = normalizeSkills(input.skillsNeed);
   const name = input.name.trim();
   const photo = cleanUrl(input.photo) || "";
+  const banner = cleanUrl(input.banner) || "";
 
   // Find user
   const dbUser = await prisma.user.findUnique({
@@ -130,11 +212,13 @@ export async function saveCompletedProfile(firebaseUid: string, input: any) {
     create: {
       userId: dbUser.id,
       fullName: name,
+      username: await generateUniqueUsername(name),
       university: input.university.trim(),
       department: input.department.trim(),
       semester: input.semester.trim(),
       bio: input.bio.trim(),
       photo,
+      banner,
       location: input.location.trim(),
       availability: input.availability,
       experience: input.experience,
@@ -151,6 +235,7 @@ export async function saveCompletedProfile(firebaseUid: string, input: any) {
       semester: input.semester.trim(),
       bio: input.bio.trim(),
       photo,
+      banner,
       location: input.location.trim(),
       availability: input.availability,
       experience: input.experience,
@@ -238,6 +323,8 @@ export async function listCompletedProfiles(): Promise<UserProfile[]> {
       profile: {
         select: {
           fullName: true,
+          username: true,
+          banner: true,
           photo: true,
           university: true,
           department: true,
@@ -273,6 +360,8 @@ export async function listCompletedProfiles(): Promise<UserProfile[]> {
       uid: user.id,
       firebaseUID: user.firebaseUid,
       name: user.profile?.fullName || "",
+      username: user.profile?.username || "",
+      banner: user.profile?.banner || "",
       email: user.email || "",
       photo: user.profile?.photo || "",
       university: user.profile?.university || "",

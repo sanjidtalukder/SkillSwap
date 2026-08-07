@@ -12,6 +12,8 @@ export interface UserProfile {
   uid: string;
   firebaseUID: string;
   name: string;
+  username: string;
+  banner?: string;
   email: string;
   photo?: string;
   university: string;
@@ -42,6 +44,7 @@ export interface UserProfile {
 export interface CompleteProfileInput {
   name: string;
   photo?: string;
+  banner?: string;
   university: string;
   department: string;
   semester: string;

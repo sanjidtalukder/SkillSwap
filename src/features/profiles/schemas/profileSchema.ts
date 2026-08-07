@@ -26,6 +26,7 @@ const skillListSchema = z
 export const completeProfileSchema = z.object({
   name: z.string().trim().min(2, "Full name is required").max(100, "Name is too long"),
   photo: optionalUrlSchema,
+  banner: optionalUrlSchema,
   university: z.string().trim().min(2, "University is required").max(120),
   department: z.string().trim().min(2, "Department is required").max(120),
   semester: z.string().trim().min(1, "Semester is required").max(30),

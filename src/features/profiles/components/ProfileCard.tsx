@@ -34,6 +34,7 @@ function getProfileValue(profile: ProfileCardData) {
     skillsNeed: profileWithNewFields.skillsNeed || profileWithLegacyFields.skillsWanted || [],
     experience: profileWithNewFields.experience || "Beginner",
     profileCompleted: Boolean(profileWithNewFields.profileCompleted),
+    username: profileWithNewFields.username || "",
   };
 }
 
@@ -115,7 +116,7 @@ export function ProfileCard({
 
         {showActions && (
           <div className={`mt-auto grid gap-2 pt-2 ${onMessage ? 'grid-cols-3' : 'grid-cols-2'}`}>
-            <Link href={`${ROUTES.PROFILE}/${data.uid}`} className={actionLinkClassName}>
+            <Link href={data.username ? `/u/${data.username}` : `${ROUTES.PROFILE}/${data.uid}`} className={actionLinkClassName}>
               <ExternalLink className="h-4 w-4" />
               View
             </Link>
