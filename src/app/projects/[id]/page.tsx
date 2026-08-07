@@ -12,6 +12,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api-client";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { ProjectJoinRequests } from "@/features/projects/components/ProjectJoinRequests";
 import { Calendar, Users, FolderOpen, Code, CheckCircle, XCircle } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 
@@ -206,7 +207,14 @@ export default function ProjectDetailsPage() {
               </p>
             </section>
 
-            <section className="space-y-3">
+            {isOwner && (
+              <section className="space-y-3 pt-6 border-t border-border/40">
+                <h2 className="text-xl font-semibold">Project Join Requests</h2>
+                <ProjectJoinRequests projectId={project.id} />
+              </section>
+            )}
+
+            <section className="space-y-3 pt-6 border-t border-border/40">
               <h2 className="text-xl font-semibold">Required Skills</h2>
               {project.requiredSkills.length > 0 ? (
                 <div className="flex flex-wrap gap-2">

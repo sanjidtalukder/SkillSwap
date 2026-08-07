@@ -15,7 +15,14 @@ export async function GET(request: NextRequest) {
         description: true,
         status: true,
         teamSize: true,
-        _count: { select: { members: true } }
+        _count: { 
+          select: { 
+            members: true,
+            joinRequests: {
+              where: { status: "pending" }
+            }
+          } 
+        }
       },
       orderBy: { createdAt: "desc" },
     });

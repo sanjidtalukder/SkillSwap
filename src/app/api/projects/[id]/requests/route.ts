@@ -61,11 +61,51 @@ export async function POST(
         type: "project_join_request",
         title: "New Join Request",
         body: `${applicantName} wants to join your project: ${project.title}`,
-        linkUrl: `/dashboard?tab=requests`,
+        linkUrl: `/projects/${id}#join-requests`,
       }
     });
 
     return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: error instanceof Error ? error.message : "Unknown error" },
+      { status: error instanceof Error && error.message === "Unauthorized" ? 401 : 500 }
+    );
+  }
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
+  try {
+    const { user } = await verifyAuth(request);
+    
+    const project = await prisma.project.findUnique({ where: { id } });
+    if (!project) {
+      return NextResponse.json({ success: false, error: "Project not found" }, { status: 404 });
+    }
+
+    if (project.ownerId !== user!.id) {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+
+    const requests = await prisma.projectJoinRequest.findMany({
+      where: { projectId: id },
+      include: {
+        user: {
+          include: {
+            profile: true,
+            skillsHave: { include: { skill: true } }
+          }
+        }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    return NextResponse.json({ success: true, data: requests });
   } catch (error) {
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : "Unknown error" },
