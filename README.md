@@ -1,323 +1,320 @@
-# 🚀 SkillSwap - Enterprise Student Collaboration & Skill Exchange Platform
+<div align="center">
+  <img src="https://via.placeholder.com/150?text=SkillSwap+Logo" alt="SkillSwap Logo" width="120" />
+  
+  <h1 align="center">SkillSwap</h1>
+  <p align="center">
+    <strong>A modern, collaborative platform for students and professionals to exchange skills and build projects together.</strong>
+  </p>
 
-![SkillSwap Banner](https://img.shields.io/badge/Next.js-15.0-blue?style=for-the-badge&logo=nextdotjs)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?style=for-the-badge&logo=typescript)
-![Firebase](https://img.shields.io/badge/Firebase-10.14-orange?style=for-the-badge&logo=firebase)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38bdf8?style=for-the-badge&logo=tailwindcss)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-
-**SkillSwap** is a production-ready, full-stack student collaboration platform designed to empower students to exchange skills, discover project partners, communicate in real time, and build real-world portfolios together.
-
-Built with **Next.js 15 (App Router)**, **TypeScript**, **Tailwind CSS**, **Zod**, **TanStack React Query**, and **Google Firebase (Authentication, Firestore, Storage)** following strict **Feature-Based Clean Architecture**.
-
----
-
-## 📖 Table of Contents
-
-1. [System Architecture](#1-system-architecture)
-2. [Folder Structure](#2-folder-structure)
-3. [Firestore Database Schema](#3-firestore-database-schema)
-4. [Authentication Flow](#4-authentication-flow)
-5. [Deterministic Skill Matching Engine v2](#5-deterministic-skill-matching-engine-v2)
-6. [Real-Time One-to-One Chat Flow](#6-real-time-one-to-one-chat-flow)
-7. [Project Collaboration Flow](#7-project-collaboration-flow)
-8. [Production Deployment Guide](#8-production-deployment-guide)
-9. [Troubleshooting & FAQ Guide](#9-troubleshooting--faq-guide)
+  <p align="center">
+    <a href="https://github.com/yourusername/skillswap/stargazers"><img src="https://img.shields.io/github/stars/yourusername/skillswap?style=for-the-badge&color=yellow" alt="Stars" /></a>
+    <a href="https://github.com/yourusername/skillswap/network/members"><img src="https://img.shields.io/github/forks/yourusername/skillswap?style=for-the-badge&color=blue" alt="Forks" /></a>
+    <a href="https://github.com/yourusername/skillswap/issues"><img src="https://img.shields.io/github/issues/yourusername/skillswap?style=for-the-badge&color=red" alt="Issues" /></a>
+    <a href="https://github.com/yourusername/skillswap/blob/main/LICENSE"><img src="https://img.shields.io/github/license/yourusername/skillswap?style=for-the-badge&color=green" alt="License" /></a>
+    <br />
+    <img src="https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/TypeScript-Ready-blue?style=flat-square&logo=typescript" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Prisma-ORM-1B222D?style=flat-square&logo=prisma" alt="Prisma" />
+    <img src="https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css" alt="Tailwind" />
+  </p>
+</div>
 
 ---
 
-## 1. System Architecture
+## 📖 Overview
 
-SkillSwap adheres to **Feature-Based Clean Architecture**, enforcing separation between domain business logic, UI presentation components, and infrastructure service abstractions.
+SkillSwap is a robust, full-stack web application designed to bridge the gap between learning and building. In a world where individuals possess complementary skills—such as a developer needing a designer, or a marketer needing a frontend engineer—SkillSwap acts as the central hub for discovering talent, forming connections, and collaborating on real-world projects.
+
+Built with performance, security, and user experience in mind, SkillSwap offers a seamless interface inspired by modern SaaS platforms. From finding connections to managing a fully-fledged Project Workspace with real-time discussions and task tracking, SkillSwap provides all the tools necessary to turn ideas into reality.
+
+---
+
+## ✨ Features
+
+SkillSwap is packed with production-ready features designed for high engagement and seamless collaboration.
+
+### 🔐 Core & Authentication
+- **Secure Authentication:** Powered by Firebase Auth with JWT validation on protected API routes.
+- **Profile Management:** Users can set up detailed profiles including University, Department, Semester, Bio, and Avatars.
+- **Skill Matrix:** Users can add and manage specific skills with proficiency levels to showcase their expertise.
+
+### 🤝 Networking
+- **Connection System:** Send, accept, or reject match requests to build your professional network.
+- **Intelligent Search:** Search across the platform for users with specific skills, projects, or universities.
+- **Notifications Engine:** Receive real-time alerts for connection requests, project invitations, and messages.
+
+### 🚀 Project Collaboration
+- **Project Discovery:** Browse public projects, filter by categories, and request to join teams.
+- **Join Request Workflow:** Project owners receive dedicated alerts to review applicant profiles and accept/reject requests.
+- **Dedicated Workspaces:** Every accepted project automatically spins up an isolated collaborative Workspace.
+
+### 💬 Communication (Workspaces & Direct)
+- **Real-time Discussion:** Group chats per project featuring markdown support, rich media attachments, and emoji reactions.
+- **Direct Messaging:** Private 1-on-1 chat interface for your accepted connections.
+- **Member Management:** Real-time synchronized member lists with Role Badges and Owner moderation controls.
+
+### ⚙️ System & Settings
+- **Dashboard:** Centralized overview of active projects, pending tasks, and recent activities.
+- **Account Settings:** Manage privacy preferences, update account details, and configure notification rules.
+- **Responsive UI:** Fully fluid layouts optimized for Desktop, Tablet, and Mobile.
+
+---
+
+## 📸 Screenshots
+
+| Dashboard | Workspace Discussion |
+| :---: | :---: |
+| <img src="https://via.placeholder.com/600x350?text=Dashboard+Preview" alt="Dashboard" /> | <img src="https://via.placeholder.com/600x350?text=Workspace+Discussion" alt="Workspace Discussion" /> |
+
+| User Profile | Search & Discover |
+| :---: | :---: |
+| <img src="https://via.placeholder.com/600x350?text=User+Profile" alt="User Profile" /> | <img src="https://via.placeholder.com/600x350?text=Search+Projects" alt="Search Projects" /> |
+
+---
+
+## 🛠 Technology Stack
+
+SkillSwap leverages a modern, bleeding-edge tech stack to ensure maximum performance and developer velocity.
+
+| Layer | Technology | Description |
+| --- | --- | --- |
+| **Frontend** | [Next.js (App Router)](https://nextjs.org/) | React framework for server-side rendering and static generation. |
+| **Styling** | [Tailwind CSS](https://tailwindcss.com/) | Utility-first CSS framework for rapid UI development. |
+| **Components** | [shadcn/ui](https://ui.shadcn.com/) | Beautifully designed, accessible, and customizable React components. |
+| **Icons** | [Lucide React](https://lucide.dev/) | Clean and modern iconography. |
+| **Backend** | Next.js API Routes | Serverless edge functions handling RESTful endpoints. |
+| **Database** | PostgreSQL | Relational database for structured data integrity. |
+| **ORM** | [Prisma](https://www.prisma.io/) | Next-generation Node.js and TypeScript ORM. |
+| **Authentication** | [Firebase Auth](https://firebase.google.com/) | Robust, secure identity and session management. |
+| **Markdown** | React-Markdown + Remark-GFM | Safe rendering of markdown in discussion forums. |
+
+---
+
+## 📐 Architecture
+
+SkillSwap follows a modern client-server architecture utilizing Next.js Server Components for heavy lifting and Client Components for interactivity. 
 
 ```mermaid
-flowchart TD
-    Client[Next.js 15 App Router - React Client] --> UI[UI Primitives & Feature Components]
-    UI --> Hooks[Custom Feature Hooks]
-    Hooks --> Query[TanStack React Query Cache]
-    Hooks --> Services[Feature Services Layer]
-    Services --> BaseService[Base Service Error Parser]
-    BaseService --> FirebaseSDK[Firebase Client SDK]
-    FirebaseSDK --> Auth[Firebase Authentication]
-    FirebaseSDK --> DB[(Cloud Firestore)]
-    FirebaseSDK --> Storage[Firebase Storage]
+graph TD
+    Client[Browser / Client] -->|HTTP Requests / Actions| NextJS[Next.js App Router]
+    NextJS -->|Protected Routes| Auth[Firebase Auth JWT Verification]
+    NextJS -->|Server Actions / APIs| Prisma[Prisma ORM]
+    Prisma -->|Raw Queries / Migrations| DB[(PostgreSQL Database)]
+    
+    Client -.->|State Management| React[React Local State]
+    Auth -.->|Session| Client
 ```
-
-### Core Architecture Highlights
-
-- **Framework**: Next.js 15 (App Router with Server Components & Client Boundaries).
-- **Type Safety**: Strict TypeScript compiler options with `@/*` absolute path alias mappings.
-- **Validation**: Runtime Zod schemas for forms (`authSchema`, `profileSchema`, `projectSchema`) and environment variable validation (`config/env.ts`).
-- **State & Cache**: TanStack React Query (`staleTime: 5 mins`, `gcTime: 10 mins`) minimizing Firestore reads.
-- **Error Handling**: Centralized error parser (`errorHandler.ts`) normalizing Firebase, Zod, Network, and Runtime exceptions into user-friendly alerts.
 
 ---
 
-## 2. Folder Structure
+## 📁 Folder Structure
 
 ```text
 SkillSwap/
-├── .env.example                  # Environment variable schema template
-├── .env.local                    # Local environment secrets (Ignored by Git)
-├── .eslintrc.json                # ESLint rules integrated with Next.js core web vitals
-├── .prettierrc & .prettierignore # Prettier formatting & Tailwind class sorting
-├── firebase.json                 # Firebase CLI deployment specifications
-├── firestore.rules               # Production Firestore security rules
-├── storage.rules                 # Production Firebase Storage security rules
-├── firestore.indexes.json        # Composite index definitions
-├── next.config.ts                # Next.js compiler settings
-├── package.json                  # Dependencies & npm scripts
-├── postcss.config.mjs            # PostCSS processing (Tailwind + Autoprefixer)
-├── tailwind.config.ts            # Tailwind styling tokens & Shadcn variables
-├── tsconfig.json                 # TypeScript strict compiler config & `@/*` path mapping
-├── vercel.json                   # Vercel deployment configuration
-└── src/
-    ├── app/                      # Next.js 15 App Router (Routing, Layouts, Metadata, API routes)
-    │   ├── (auth)/               # Login, Register, Forgot Password routes
-    │   ├── (dashboard)/          # Dashboard, Profile, Matches, Projects, Chat, Search
-    │   ├── error.tsx             # Global error boundary fallback
-    │   ├── globals.css           # Global design tokens & CSS custom variables
-    │   ├── layout.tsx            # Root layout wrapping AppProvider
-    │   ├── loading.tsx           # Global skeleton loading fallback
-    │   └── page.tsx              # Public landing page
-    ├── components/               # Cross-feature shared UI primitives & structural components
-    │   ├── common/               # Header, Footer, ErrorBoundary, OfflineIndicator
-    │   └── ui/                   # Button, Input, Card, Badge, Alert, Avatar, Skeleton, Spinner, EmptyState
-    ├── config/                   # Global configuration & environment validation
-    │   └── env.ts                # Zod runtime environment variable parser
-    ├── constants/                # Immutable global constants (ROUTES, SITE_CONFIG)
-    ├── features/                 # Modular Domain Features (Encapsulated)
-    │   ├── auth/                 # Authentication (LoginForm, SignUpForm, authService, useAuth)
-    │   ├── notifications/        # Realtime Notifications (NotificationItem, NotificationListGroup, useNotifications)
-    │   ├── projects/             # Projects Collaboration (CreateProjectModal, ProjectCard, projectService)
-    │   ├── skills/               # Skill Matchmaker (skillMatcher.ts, MatchBadge, MatchCard)
-    │   └── users/                # Student Profile & Search (ProfileCard, searchService, useSearchStudents)
-    ├── firebase/                 # Dedicated Firebase Client Module (config.ts, index.ts)
-    ├── hooks/                    # Domain-agnostic custom hooks (useDebounce, useMediaQuery)
-    ├── lib/                      # Infrastructure integrations (queryClient.ts)
-    ├── providers/                # Client-side React context wrappers (AppProvider, QueryProvider)
-    ├── services/                 # Enterprise base service abstractions (baseService.ts)
-    ├── types/                    # Shared TypeScript interfaces (api.ts, firestore.ts)
-    └── utils/                    # Utility helpers (cn, errors, errorHandler, searchTokens)
+├── prisma/                  # Database schema and migrations
+│   └── schema.prisma        # Prisma data models
+├── public/                  # Static assets (images, icons)
+├── src/
+│   ├── app/                 # Next.js App Router pages and layouts
+│   │   ├── (dashboard)/     # Authenticated dashboard routes
+│   │   ├── api/             # Backend REST API routes
+│   │   ├── profile/         # Public user profile pages
+│   │   ├── projects/        # Project discovery and details
+│   │   ├── workspace/       # Isolated project collaboration hubs
+│   │   └── chat/            # Direct messaging interfaces
+│   ├── components/          # Reusable UI components
+│   │   └── ui/              # shadcn/ui generic components
+│   ├── lib/                 # Third-party library initializations (Prisma, Firebase)
+│   └── utils/               # Helper functions (Auth validation, formatters)
+├── package.json             # Dependencies and scripts
+└── tailwind.config.ts       # Tailwind CSS configuration
 ```
 
 ---
 
-## 3. Firestore Database Schema
+## 🗄️ Database Design
 
-The database consists of **6 primary collections** engineered for zero-join reads and $O(1)$ query scaling:
+The relational database is structured to support complex networking and project management without sacrificing performance.
 
-```mermaid
-erDiagram
-    Users ||--o{ Projects : "creates"
-    Users ||--o{ Connections : "initiates/receives"
-    Users ||--o{ Notifications : "receives"
-    Users ||--o{ Chats : "participates in"
-    Chats ||--o{ Messages : "contains"
-    Projects ||--o{ Connections : "linked to"
-
-    Users {
-        string uid PK
-        string email
-        string fullName
-        array skillsOffered
-        array skillsWanted
-        number rating
-        timestamp createdAt
-    }
-
-    Projects {
-        string projectId PK
-        string ownerId FK
-        string title
-        number progressPercentage
-        string status
-        timestamp createdAt
-    }
-
-    Chats {
-        string chatId PK
-        array participants FK
-        map lastMessage
-        timestamp updatedAt
-    }
-
-    Messages {
-        string messageId PK
-        string chatId FK
-        string senderId FK
-        string content
-        timestamp createdAt
-    }
-
-    Connections {
-        string connectionId PK
-        string requesterId FK
-        string recipientId FK
-        string status
-        timestamp createdAt
-    }
-
-    Notifications {
-        string notificationId PK
-        string recipientId FK
-        string type
-        boolean read
-        timestamp createdAt
-    }
-```
-
-### Collection Specifications & Paths
-
-1. **`Users`** (`/users/{userId}`): Stores student profiles, department, semester, skills offered/wanted, rating, and search tokens.
-2. **`Projects`** (`/projects/{projectId}`): Stores collaboration projects, required skills, member list, and progress percentage (0-100%).
-3. **`Chats`** (`/chats/{chatId}`): Stores active direct conversation sessions, participant UIDs, last message preview, and unread counts.
-4. **`Messages`** (`/chats/{chatId}/messages/{messageId}`): Subcollection storing immutable chat message history.
-5. **`Connections`** (`/connections/{connectionId}`): Stores connection requests between students (`pending`, `accepted`, `rejected`, `blocked`).
-6. **`Notifications`** (`/notifications/{notificationId}`): Stores in-app alerts (`connection_request`, `connection_accepted`, `new_message`, `project_invitation`).
+### Core Models:
+- **`User` & `Profile`**: Separates core auth data from public-facing profile information.
+- **`Skill` & `UserSkill`**: A many-to-many relationship mapping users to their respective proficiencies.
+- **`MatchRequest`**: Handles the logic for sending, accepting, and rejecting network connections.
+- **`Project`**: The core entity for collaboration, containing metadata like title, description, and team size.
+- **`ProjectMember`**: Maps accepted users to a project. *Note: Workspaces automatically derive their access control from this table.*
+- **`ProjectJoinRequest`**: Tracks pending applications from users wanting to join a project.
+- **`Conversation` & `Message`**: A polymorphic messaging system that supports both Direct Messages (1-on-1) and Workspace Group Chats. Includes native threading (`parentId`) and emojis (`MessageReaction`).
+- **`Notification`**: A centralized table for platform-wide alerts (messages, requests, system alerts).
 
 ---
 
-## 4. Authentication Flow
+## 🔐 Authentication Flow
+
+1. **Sign Up/Log In:** The client authenticates directly with Firebase Auth.
+2. **Session Persistence:** Firebase manages the secure HTTP-only session token.
+3. **API Protection:** Every protected API route invokes `verifyAuth(request)`. This utility decodes the JWT, verifies it against Firebase Admin, and attaches the `user` object to the request context.
+4. **Unauthorized Access:** If the token is invalid or missing, the API throws a strict `403 Forbidden` or `401 Unauthorized`, instantly halting database execution.
+
+---
+
+## 🔗 Connection System
+
+SkillSwap treats professional networking as a first-class citizen.
+- **Discover:** Find users on the `/search` page based on overlapping skills.
+- **Request:** Send a connection request (`MatchRequest`). The recipient gets a real-time Notification.
+- **Review:** The recipient can Accept or Reject the request.
+- **Collaborate:** Once accepted, a direct `Conversation` is automatically initialized, unlocking the ability to send Direct Messages.
+
+---
+
+## 🏗️ Project Collaboration Flow
+
+The lifecycle of a project on SkillSwap:
 
 ```mermaid
 sequenceDiagram
-    autonumber
-    actor Student
-    participant UI as Login / SignUp Form
-    participant AuthContext as AuthContext / useAuth Hook
-    participant Firebase as Firebase Auth SDK
-    participant Firestore as Firestore (/users)
-
-    Student->>UI: Enters Credentials
-    UI->>UI: Validates with Zod Schema
-    UI->>Firebase: signInWithEmailAndPassword() / createUserWithEmailAndPassword()
-    Firebase-->>AuthContext: Triggers onAuthStateChanged(user)
-    AuthContext->>Firestore: Fetches /users/{uid} document
-    AuthContext-->>UI: Updates Session State
-    UI->>Student: Navigates to /dashboard
-```
-
-### Route Protection
-
-The `ProtectedRoute` wrapper component intercepts unauthenticated navigation attempts to protected routes (`/dashboard`, `/profile`, `/projects`, `/chat`, `/matches`), automatically redirecting to `/login`.
-
----
-
-## 5. Deterministic Skill Matching Engine v2
-
-The Skill Matcher calculates exact 2-way compatibility scores between students using mathematical set operations:
-
-### Mathematical Match Formula
-
-Let $U_A = (O_A, W_A)$ and candidate $U_B = (O_B, W_B)$:
-
-$$\text{Direct Need Ratio } R_{A \leftarrow B} = \frac{|O_B \cap W_A|}{\max(1, |W_A|)}$$
-
-$$\text{Reciprocal Need Ratio } R_{B \leftarrow A} = \frac{|O_A \cap W_B|}{\max(1, |W_B|)}$$
-
-$$\text{Complementary Score } C = 0.60 \cdot R_{A \leftarrow B} + 0.40 \cdot R_{B \leftarrow A}$$
-
-$$\text{Shared Skills Score } S = \frac{|O_A \cap O_B|}{|O_A \cup O_B|}$$
-
-$$\text{Final Score } M = \min\left(100, \text{Math.round}( (0.70 \cdot C + 0.15 \cdot S + \mu) \times 100 )\right)\%$$
-
-_($\mu = 0.15$ if mutual 2-way swap exists; $0$ otherwise)._
-
-### 5-Tier Deterministic Ranking Tuple
-
-Sort Vector: $V(U_B) = \Big( M(U_A, U_B), \quad |O_B \cap W_A|, \quad \text{rating}(U_B), \quad \text{completedSwaps}(U_B), \quad -\text{strcmp}(\text{uid}_B, \text{uid}_A) \Big)$
-
----
-
-## 6. Real-Time One-to-One Chat Flow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Sender as Student A
-    participant ClientA as Sender App
-    participant Firestore as Cloud Firestore
-    participant ClientB as Recipient App
-    actor Recipient as Student B
-
-    Sender->>ClientA: Types in input bar
-    ClientA->>Firestore: setTypingStatus(chatId, uidA, true)
-    Firestore-->>ClientB: onSnapshot listener receives typingStatus
-    ClientB->>Recipient: Shows TypingIndicator ("Student A is typing...")
-
-    Sender->>ClientA: Clicks Send
-    ClientA->>Firestore: sendMessage(chatId, content)
-    Firestore-->>ClientB: onSnapshot receives new message
-    ClientB->>Recipient: Renders MessageBubble
-
-    Recipient->>ClientB: Opens Chat Window
-    ClientB->>Firestore: markMessagesAsRead(chatId, uidB)
-    Firestore-->>ClientA: Updates message status to "read" (✔✔ Blue Checkmark)
+    participant Creator
+    participant Platform
+    participant Applicant
+    
+    Creator->>Platform: Creates New Project
+    Platform-->>Applicant: Project appears in Discovery Feed
+    Applicant->>Platform: Submits Join Request
+    Platform->>Creator: Sends Notification
+    Creator->>Platform: Reviews & Accepts Request
+    Platform->>Platform: Creates ProjectMember Record
+    Platform->>Platform: Grants Workspace Access
+    Platform-->>Applicant: Sends Acceptance Notification
+    Applicant->>Platform: Enters Workspace Discussion
 ```
 
 ---
 
-## 7. Project Collaboration Flow
+## 🏢 Workspace
 
-1. **Create Project**: Student fills title, description, required skill tags, and initial status (`open`).
-2. **Invite & Join Workflows**: Owners can send invites to candidate students; students can submit join requests.
-3. **Progress Tracking**: Owners update project completion percentage (0% to 100%), auto-syncing status (`in_progress` -> `completed`).
-4. **Owner Permission Enforcement**: Firestore Security Rules (`firestore.rules`) enforce that only `ownerId == request.auth.uid` can edit project details or update progress.
+The Workspace is an isolated environment generated exclusively for accepted `ProjectMembers`. It acts as the command center for your team:
+
+- **Overview:** High-level statistics, recent activities, and upcoming deadlines.
+- **Discussion:** A real-time, Markdown-supported group chat. Features include Emoji Reactions, threaded replies, date separators, and robust file attachment parsing.
+- **Members:** A dynamic, synchronized list of the team. Automatically derives state from the `ProjectMember` table. Project Owners can moderate and remove members here.
+- **Tasks (Coming Soon):** Kanban-style task tracking.
+- **Files & Announcements (Coming Soon):** Shared asset repository and important team broadcasts.
 
 ---
 
-## 8. Production Deployment Guide
+## 📱 Responsive Design
 
-### Option A: Deployment to Vercel (Recommended)
+SkillSwap's UI is strictly engineered to be fluid and fully responsive:
+- **Desktop (1024px+):** Expansive grid layouts, persistent sidebars, and dense data tables.
+- **Tablet (768px - 1024px):** Collapsible sidebars, adjusted grid columns, and optimized touch targets.
+- **Mobile (<768px):** Bottom navigation bars, hamburger menus, stacked cards, and full-screen modal takeovers to ensure complete functionality on the go.
 
-1. Push repository to GitHub.
-2. Import project at [vercel.com/new](https://vercel.com/new).
-3. Configure Environment Variables:
-   - `NEXT_PUBLIC_FIREBASE_API_KEY`
-   - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
-   - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
-   - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
-   - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
-   - `NEXT_PUBLIC_FIREBASE_APP_ID`
-4. Click **Deploy**. Vercel will build and assign an SSL domain (`https://skillswap.vercel.app`).
-5. Add your Vercel URL to [Firebase Console -> Auth -> Authorized Domains](https://console.firebase.google.com/project/skillswap-fe53d/authentication/settings).
+---
 
-### Option B: Deploy Security Rules & Indexes via Firebase CLI
+## 🛡️ Security
 
+- **Database Integrity:** Prisma ORM prevents SQL injection by default through parameterized queries.
+- **Authorization:** API routes strictly verify ownership. (e.g., A user cannot delete a `ProjectMember` unless their ID matches the `Project.ownerId`).
+- **Data Privacy:** Passwords are never stored on our database; identity is entirely delegated to Firebase's encrypted infrastructure.
+- **Cascade Deletions:** Database relationships utilize `onDelete: Cascade` to ensure that deleting a Project securely wipes all related tasks, messages, and files without leaving orphaned data.
+
+---
+
+## 🚀 Installation & Local Development
+
+Follow these steps to get SkillSwap running on your local machine.
+
+### 1. Clone the repository
 ```bash
-npm install -g firebase-tools
-firebase login
-firebase deploy --only firestore:rules,firestore:indexes,storage
+git clone https://github.com/yourusername/skillswap.git
+cd skillswap
 ```
 
+### 2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+```
+
+### 3. Setup Environment Variables
+Create a `.env` file in the root directory and populate it:
+```env
+# Database
+DATABASE_URL="postgresql://user:password@localhost:5432/skillswap?schema=public"
+
+# Firebase Client
+NEXT_PUBLIC_FIREBASE_API_KEY="your_api_key"
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="your_domain"
+NEXT_PUBLIC_FIREBASE_PROJECT_ID="your_project_id"
+
+# Firebase Admin
+FIREBASE_CLIENT_EMAIL="your_client_email"
+FIREBASE_PRIVATE_KEY="your_private_key"
+```
+
+### 4. Database Initialization
+Push the Prisma schema to your database and generate the TypeScript client:
+```bash
+npx prisma db push
+npx prisma generate
+```
+
+### 5. Start the Development Server
+```bash
+npm run dev
+```
+Visit `http://localhost:3000` in your browser.
+
 ---
 
-## 9. Troubleshooting & FAQ Guide
+## 🛣️ Future Roadmap
 
-### Q1: `Firebase App named '[DEFAULT]' already exists`
-
-- **Cause**: Re-initializing Firebase App during Next.js Hot Module Replacement (HMR) or Server-Side Rendering (SSR).
-- **Solution**: Handled automatically via guarded singleton pattern in `src/firebase/index.ts`:
-  `const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);`
-
-### Q2: `auth/unauthorized-domain` Error during Login
-
-- **Cause**: Trying to log in from a local domain or Vercel URL not listed in Firebase Console.
-- **Solution**: Navigate to Firebase Console -> Authentication -> Settings -> Authorized Domains and add `localhost` or your Vercel deployment URL.
-
-### Q3: `permission-denied` Error on Firestore Write
-
-- **Cause**: Client attempting to modify protected fields or write to another user's document.
-- **Solution**: Ensure your request adheres to `firestore.rules`. For example, `rating` and `completedSwaps` are immutable from client SDKs.
-
-### Q4: ESLint `Cannot find module 'es-abstract'`
-
-- **Cause**: Stale cache or interrupted `npm install`.
-- **Solution**: Run `npm install -D es-abstract --legacy-peer-deps` to refresh resolution trees.
+- [ ] **Real-time WebSockets:** Migrate polling to Socket.io or Pusher for instantaneous chat delivery.
+- [ ] **AI Project Matching:** Implement an AI recommendation engine to suggest teammates based on skill gaps.
+- [ ] **Kanban Task Board:** Complete the drag-and-drop task management tab inside Workspaces.
+- [ ] **AWS S3 Integration:** Enable robust, scalable file storage for project assets.
+- [ ] **Video/Audio Calls:** Native WebRTC integration for team standups.
+- [ ] **Mobile App:** A React Native wrapper for iOS and Android platforms.
 
 ---
 
-## 📜 License & Credits
+## 🤝 Contributing
 
-Built with ❤️ by the SkillSwap Team. Distributed under the MIT License.
+We welcome contributions from the community! To contribute:
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/amazing-feature`).
+3. Commit your changes (`git commit -m 'Add amazing feature'`).
+4. Push to the branch (`git push origin feature/amazing-feature`).
+5. Open a Pull Request.
+
+Please ensure your code passes `npx tsc --noEmit` and follows the existing ESLint configurations.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 👨‍💻 Author
+
+**Your Name**
+- GitHub: [@yourusername](https://github.com/yourusername)
+- LinkedIn: [Your Name](https://linkedin.com/in/yourusername)
+- Portfolio: [yourwebsite.com](https://yourwebsite.com)
+- Email: your.email@example.com
+
+---
+
+## 🙏 Acknowledgements
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Prisma Documentation](https://www.prisma.io/docs/)
+- [shadcn/ui](https://ui.shadcn.com/) for the incredible component library.
+- [Vercel](https://vercel.com/) for hosting and deployment inspiration.
+
+<div align="center">
+  <br />
+  <p>Made with ❤️ by the SkillSwap Team.</p>
+</div>
