@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 import { NotificationItem } from "@/features/notifications/components/NotificationItem";
@@ -9,17 +9,21 @@ import { Footer } from "@/components/common/Footer";
 import { Bell, Check } from "lucide-react";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";
 
+type FilterType = "all" | "unread" | "read" | "connections" | "messages";
+
 export default function NotificationsPage() {
   const { user } = useAuth();
-  const { grouped, unreadCount, markAsRead, markAllAsRead, isLoading } =
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, isLoading } =
     useNotifications(user?.uid);
+  const [filter, setFilter] = useState<FilterType>("all");
 
-  const groupedArray = [
-    { timeframe: "Today", items: grouped.today },
-    { timeframe: "Yesterday", items: grouped.yesterday },
-    { timeframe: "This Week", items: grouped.thisWeek },
-    { timeframe: "Older", items: grouped.older },
-  ].filter((g) => g.items.length > 0);
+  const filteredNotifications = notifications.filter((notif) => {
+    if (filter === "unread") return !notif.read;
+    if (filter === "read") return notif.read;
+    if (filter === "connections") return notif.type.includes("connection");
+    if (filter === "messages") return notif.type === "message";
+    return true;
+  });
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -46,27 +50,36 @@ export default function NotificationsPage() {
           )}
         </div>
 
+        {/* Filters */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+          {(["all", "unread", "read", "connections", "messages"] as FilterType[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                filter === f
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+              }`}
+            >
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
+
         {isLoading ? (
           <div className="space-y-4">
             <CardSkeleton count={3} />
           </div>
-        ) : groupedArray.length > 0 ? (
-          <div className="space-y-8">
-            {groupedArray.map((group) => (
-              <section key={group.timeframe} className="space-y-4">
-                <h2 className="text-lg font-semibold border-b border-border/40 pb-2">
-                  {group.timeframe}
-                </h2>
-                <div className="space-y-2">
-                  {group.items.map((notif) => (
-                    <NotificationItem
-                      key={notif.id || notif.notificationId}
-                      notification={notif}
-                      markAsRead={markAsRead}
-                    />
-                  ))}
-                </div>
-              </section>
+        ) : filteredNotifications.length > 0 ? (
+          <div className="space-y-4">
+            {filteredNotifications.map((notif) => (
+              <NotificationItem
+                key={notif.id || notif.notificationId}
+                notification={notif}
+                markAsRead={markAsRead}
+                onDelete={deleteNotification}
+              />
             ))}
           </div>
         ) : (
@@ -74,7 +87,9 @@ export default function NotificationsPage() {
             <Bell className="w-16 h-16 text-muted mb-4" />
             <h2 className="text-xl font-bold">You&apos;re all caught up</h2>
             <p className="text-muted-foreground mt-2 max-w-sm">
-              When you get connection requests, messages, or project invites, they&apos;ll show up here.
+              {filter === "all" 
+                ? "When you get connection requests, messages, or project invites, they'll show up here."
+                : `No ${filter} notifications found.`}
             </p>
           </div>
         )}

@@ -22,12 +22,14 @@ interface NotificationItemProps {
   notification: NotificationDocument;
   onClose?: () => void;
   markAsRead?: (id: string) => Promise<void> | void;
+  onDelete?: (id: string) => Promise<void> | void;
 }
 
 export function NotificationItem({
   notification,
   onClose,
   markAsRead,
+  onDelete,
 }: NotificationItemProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -113,6 +115,19 @@ export function NotificationItem({
           : "bg-card border-border/50"
       }`}
     >
+      {onDelete && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(notification.id || notification.notificationId);
+          }}
+          className="absolute top-2 right-2 p-1 text-muted-foreground/50 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors opacity-0 group-hover:opacity-100"
+          aria-label="Delete notification"
+        >
+          <XCircle className="w-4 h-4" />
+        </button>
+      )}
+
       {!notification.read && (
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />
       )}

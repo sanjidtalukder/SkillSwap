@@ -7,6 +7,8 @@ import { Card } from "@/components/ui/Card";
 import { ROUTES } from "@/constants";
 import { UserProfile } from "@/features/profiles/types/profile";
 import { UserDocument } from "@/types/firestore";
+import { useConnectionStatus } from "@/features/profiles/hooks/useConnectionStatus";
+import { useRouter } from "next/navigation";
 
 type ProfileCardData = UserProfile | UserDocument;
 
@@ -47,6 +49,8 @@ export function ProfileCard({
 }: ProfileCardProps) {
   const data = getProfileValue(profile);
   const profileUrl = data.username ? `/u/${data.username}` : `${ROUTES.PROFILE}/${data.uid}`;
+  const { status, conversationId, sendRequest, acceptRequest, rejectRequest } = useConnectionStatus(data.uid);
+  const router = useRouter();
 
   return (
     <Card className="group relative flex flex-col h-full overflow-hidden bg-card hover:-translate-y-1 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300">
@@ -138,35 +142,117 @@ export function ProfileCard({
       {showActions && (
         <div className="mt-auto border-t border-border/50 bg-muted/10 p-4 relative z-20">
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              type="button"
-              size="sm"
-              className="flex-1 h-9 text-xs font-semibold shadow-sm whitespace-nowrap px-2"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onConnect?.(data.uid);
-              }}
-              disabled={!onConnect || isConnecting}
-              isLoading={isConnecting}
-            >
-              {isConnecting ? "Connecting" : "Connect"}
-            </Button>
             
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              className="flex-1 h-9 text-xs font-semibold shadow-sm bg-background border border-border/80 hover:bg-muted whitespace-nowrap px-2"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onMessage?.(data.uid);
-              }}
-              disabled={!onMessage}
-            >
-              <MessageCircle className="h-3.5 w-3.5 mr-1.5" /> Message
-            </Button>
+            {status === "NOT_CONNECTED" && (
+              <Button
+                type="button"
+                size="sm"
+                className="flex-1 h-9 text-xs font-semibold shadow-sm whitespace-nowrap px-2"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  sendRequest();
+                }}
+              >
+                Connect
+              </Button>
+            )}
+
+            {status === "PENDING_SENT" && (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="flex-1 h-9 text-xs font-semibold shadow-sm whitespace-nowrap px-2 opacity-70"
+                disabled
+              >
+                Request Sent
+              </Button>
+            )}
+
+            {status === "PENDING_RECEIVED" && (
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="flex-1 h-9 text-xs font-semibold shadow-sm whitespace-nowrap px-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    acceptRequest();
+                    router.refresh();
+                  }}
+                >
+                  Accept
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="destructive"
+                  className="flex-1 h-9 text-xs font-semibold shadow-sm whitespace-nowrap px-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    rejectRequest();
+                    router.refresh();
+                  }}
+                >
+                  Reject
+                </Button>
+              </>
+            )}
+
+            {status === "ACCEPTED" && (
+              <>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  className="flex-1 h-9 text-xs font-semibold shadow-sm whitespace-nowrap px-2 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 pointer-events-none"
+                  disabled
+                >
+                  <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> Connected
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  className="flex-1 h-9 text-xs font-semibold shadow-sm bg-background border border-border/80 hover:bg-muted whitespace-nowrap px-2"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (conversationId) {
+                      router.push(`/chat/${conversationId}`);
+                    } else {
+                      onMessage?.(data.uid);
+                    }
+                  }}
+                >
+                  <MessageCircle className="h-3.5 w-3.5 mr-1.5" /> Message
+                </Button>
+              </>
+            )}
+
+            {status === "LOADING" && (
+              <div className="flex-1 h-9 bg-muted/50 rounded animate-pulse" />
+            )}
+            
+            {status !== "ACCEPTED" && status !== "LOADING" && status !== "PENDING_RECEIVED" && (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="flex-1 h-9 text-xs font-semibold shadow-sm bg-background border border-border/80 hover:bg-muted whitespace-nowrap px-2"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onMessage?.(data.uid);
+                }}
+              >
+                <MessageCircle className="h-3.5 w-3.5 mr-1.5" /> Message
+              </Button>
+            )}
+            
           </div>
         </div>
       )}

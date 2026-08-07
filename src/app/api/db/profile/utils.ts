@@ -128,8 +128,14 @@ export async function getProfile(uid: string): Promise<UserProfile | null> {
 }
 
 export async function getProfileByUsername(username: string): Promise<(UserProfile & { ownedProjects: any[] }) | null> {
-  const profileRecord = await prisma.profile.findUnique({
-    where: { username },
+  const profileRecord = await prisma.profile.findFirst({
+    where: {
+      OR: [
+        { username: username },
+        { userId: username },
+        { user: { firebaseUid: username } }
+      ]
+    },
     include: {
       user: {
         include: {

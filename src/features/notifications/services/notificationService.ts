@@ -101,4 +101,37 @@ export const notificationService = {
       };
     }
   },
+
+  async deleteNotification(notificationId: string): Promise<ServiceResult<void>> {
+    try {
+      const response = await fetchWithAuth(`/api/notifications/${encodeURIComponent(notificationId)}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        return {
+          data: null,
+          error: {
+            userMessage: data.error || "Failed to delete notification.",
+            code: "notification_error",
+            message: data.error || "Failed to delete notification.",
+            statusCode: response.status,
+          },
+        };
+      }
+
+      return { data: undefined, error: null };
+    } catch (error) {
+      return {
+        data: null,
+        error: {
+          userMessage: "Failed to delete notification.",
+          code: "notification_error",
+          message: error instanceof Error ? error.message : "Unknown error",
+          statusCode: 500,
+        },
+      };
+    }
+  },
 };

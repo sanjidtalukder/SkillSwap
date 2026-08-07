@@ -229,7 +229,8 @@ export function CompleteProfileForm() {
       return;
     }
 
-    setNotice("Profile completed successfully.");
+    setNotice(profile?.profileCompleted ? "Profile updated successfully." : "Profile completed successfully.");
+    router.refresh();
     router.replace(ROUTES.DASHBOARD);
   };
 
@@ -245,9 +246,7 @@ export function CompleteProfileForm() {
     return null;
   }
 
-  if (profile?.profileCompleted) {
-    return null;
-  }
+  // Removed early return for completed profile to allow editing
 
   return (
     <Card className="mx-auto w-full max-w-4xl overflow-hidden">

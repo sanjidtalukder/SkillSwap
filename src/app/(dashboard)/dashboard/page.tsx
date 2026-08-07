@@ -186,24 +186,32 @@ export default function DashboardPage() {
         {/* Recent Activity Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Latest Notifications */}
-          <div className="md:col-span-1 rounded-xl border border-border bg-card p-5 shadow-sm flex flex-col">
+          <div className="md:col-span-1 rounded-xl border border-border bg-card p-5 shadow-sm flex flex-col max-h-[400px]">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold flex items-center">
                 <Bell className="w-4 h-4 mr-2 text-primary" /> Notifications
               </h2>
-              <Link href="/notifications" className="text-xs text-primary hover:underline font-medium">View All</Link>
             </div>
             <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
               {statsLoading ? (
                  <CardSkeleton count={1} />
               ) : statsData?.recentActivity.latestNotifications?.length > 0 ? (
-                statsData.recentActivity.latestNotifications.map((notif: any) => (
-                  <div key={notif.id} className="p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/30 transition-colors">
-                    <p className="text-sm font-medium">{notif.title}</p>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{notif.body}</p>
-                    <p className="text-[10px] text-muted-foreground mt-2">{format(new Date(notif.createdAt), 'MMM d, h:mm a')}</p>
-                  </div>
-                ))
+                <>
+                  {statsData.recentActivity.latestNotifications.slice(0, 3).map((notif: any) => (
+                    <div key={notif.id} className="p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/30 transition-colors">
+                      <p className="text-sm font-medium">{notif.title}</p>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{notif.body}</p>
+                      <p className="text-[10px] text-muted-foreground mt-2">{format(new Date(notif.createdAt), 'MMM d, h:mm a')}</p>
+                    </div>
+                  ))}
+                  {statsData.recentActivity.latestNotifications.length > 3 && (
+                    <div className="pt-2 text-center">
+                      <Link href="/notifications" className="text-xs font-semibold text-primary hover:underline inline-flex items-center">
+                        View All <ChevronRight className="w-3 h-3 ml-1" />
+                      </Link>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center p-4">
                   <Bell className="w-8 h-8 text-muted mb-2" />

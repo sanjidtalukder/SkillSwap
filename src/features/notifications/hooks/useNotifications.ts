@@ -76,6 +76,13 @@ export function useNotifications(userId?: string | null) {
     await notificationService.markAllAsRead(notifications);
   }, [notifications]);
 
+  // Optimistic Delete Notification
+  const deleteNotification = useCallback(async (notificationId: string) => {
+    // Optimistic state update
+    setNotifications((prev) => prev.filter((n) => (n.id || n.notificationId) !== notificationId));
+    await notificationService.deleteNotification(notificationId);
+  }, []);
+
   return {
     notifications,
     grouped,
@@ -84,5 +91,6 @@ export function useNotifications(userId?: string | null) {
     error,
     markAsRead,
     markAllAsRead,
+    deleteNotification,
   };
 }
