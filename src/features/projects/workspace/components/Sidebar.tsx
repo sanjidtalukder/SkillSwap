@@ -24,7 +24,7 @@ export function Sidebar({ projectId, isOwner }: SidebarProps) {
     { name: "Overview", href: `/projects/${projectId}/workspace`, icon: LayoutDashboard },
     { name: "Group Chat", href: `/projects/${projectId}/workspace/chat`, icon: MessageSquare },
     { name: "Members", href: `/projects/${projectId}/workspace/members`, icon: Users },
-    { name: "Files", href: `/projects/${projectId}/workspace/files`, icon: FolderOpen, disabled: true },
+    { name: "Files", href: `/projects/${projectId}/workspace/files`, icon: FolderOpen },
     { name: "Tasks", href: `/projects/${projectId}/workspace/tasks`, icon: CheckSquare, disabled: true },
   ];
 

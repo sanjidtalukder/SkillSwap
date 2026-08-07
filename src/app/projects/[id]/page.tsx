@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api-client";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { ProjectJoinRequests } from "@/features/projects/components/ProjectJoinRequests";
+import { useWorkspaceAccess } from "@/hooks/useWorkspaceAccess";
 import { Calendar, Users, FolderOpen, Code, CheckCircle, XCircle } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 
@@ -49,6 +50,7 @@ export default function ProjectDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { openWorkspace, isVerifying } = useWorkspaceAccess();
   
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -169,9 +171,9 @@ export default function ProjectDetailsPage() {
                 <Button variant="destructive" className="w-full" onClick={handleDelete}>Delete Project</Button>
               </>
             ) : isMember || project.joinRequestStatus === "accepted" ? (
-              <Link href={`/projects/${project.id}/workspace`}>
-                <Button className="w-full">Open Workspace</Button>
-              </Link>
+              <Button className="w-full" onClick={() => openWorkspace(project.id)} isLoading={isVerifying}>
+                Open Workspace
+              </Button>
             ) : project.joinRequestStatus === "pending" ? (
               <Button disabled variant="outline" className="w-full">Request Sent</Button>
             ) : project.joinRequestStatus === "rejected" ? (

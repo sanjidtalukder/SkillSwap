@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma.server";
 import { verifyAuth } from "@/utils/auth";
+import { canAccessWorkspace } from "@/utils/workspace-auth";
 
 export async function GET(
   request: NextRequest,
@@ -62,10 +63,8 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Project not found" }, { status: 404 });
     }
 
-    const isOwner = project.ownerId === user!.id;
-    const isMember = project.members.some(m => m.userId === user!.id);
-
-    if (!isOwner && !isMember) {
+    const access = await canAccessWorkspace(user!.id, project.id);
+    if (!access.hasAccess) {
       return NextResponse.json({ success: false, error: "Access Denied" }, { status: 403 });
     }
 

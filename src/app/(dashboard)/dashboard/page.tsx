@@ -22,12 +22,14 @@ import { ROUTES } from "@/constants";
 import { toast } from "sonner";
 import { ConnectionDialog } from "@/components/common/ConnectionDialog";
 import { Pagination } from "@/components/ui/Pagination";
+import { useWorkspaceAccess } from "@/hooks/useWorkspaceAccess";
 
 export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
+  const { openWorkspace, isVerifying } = useWorkspaceAccess();
   const [startingChatId, setStartingChatId] = useState<string | null>(null);
   
   const {
@@ -456,7 +458,7 @@ export default function DashboardPage() {
                               </div>
                               <div className="mt-auto pt-2 grid grid-cols-2 gap-2">
                                 <Button variant="outline" size="sm" onClick={() => router.push(`/projects/${p.id}/edit`)} className="w-full text-xs">Edit Project</Button>
-                                <Button variant="primary" size="sm" onClick={() => router.push(`/projects/${p.id}/workspace`)} className="w-full text-xs">Open Workspace</Button>
+                                <Button variant="primary" size="sm" onClick={() => openWorkspace(p.id)} isLoading={isVerifying} className="w-full text-xs">Open Workspace</Button>
                               </div>
                             </div>
                           ))}
@@ -493,7 +495,7 @@ export default function DashboardPage() {
                                 <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> {p._count?.members ? p._count.members + 1 : 1} / {p.teamSize}</span>
                               </div>
                               <div className="mt-auto pt-2 grid grid-cols-2 gap-2">
-                                <Button variant="primary" size="sm" onClick={() => router.push(`/projects/${p.id}/workspace`)} className="w-full text-xs">Open Workspace</Button>
+                                <Button variant="primary" size="sm" onClick={() => openWorkspace(p.id)} isLoading={isVerifying} className="w-full text-xs">Open Workspace</Button>
                                 <Button variant="outline" size="sm" onClick={() => toast.error("Leave Project coming soon")} className="w-full text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground">Leave Project</Button>
                               </div>
                             </div>
