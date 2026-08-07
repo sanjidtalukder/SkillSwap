@@ -148,7 +148,7 @@ export default function DashboardPage() {
           
           {/* Quick Actions Bar */}
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => router.push("/complete-profile")} className="hidden sm:flex">
+            <Button variant="outline" size="sm" onClick={() => router.push("/complete-profile?mode=edit")} className="hidden sm:flex">
               <Edit className="w-4 h-4 mr-2" /> Edit Profile
             </Button>
             <Button variant="secondary" size="sm" onClick={() => router.push("/skills")}>
@@ -191,31 +191,24 @@ export default function DashboardPage() {
         {/* Recent Activity Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Latest Notifications */}
-          <div className="md:col-span-1 rounded-xl border border-border bg-card p-5 shadow-sm flex flex-col max-h-[400px]">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold flex items-center">
+          <div className="md:col-span-1 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-5 shadow-sm flex flex-col h-[420px] hover:border-primary/40 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
+              <h2 className="text-lg font-semibold flex items-center tracking-tight">
                 <Bell className="w-4 h-4 mr-2 text-primary" /> Notifications
               </h2>
             </div>
-            <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto space-y-3 pr-2 scroll-smooth custom-scrollbar">
               {statsLoading ? (
                  <CardSkeleton count={1} />
               ) : statsData?.recentActivity.latestNotifications?.length > 0 ? (
                 <>
-                  {statsData.recentActivity.latestNotifications.slice(0, 3).map((notif: any) => (
-                    <div key={notif.id} className="p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/30 transition-colors">
+                  {statsData.recentActivity.latestNotifications.slice(0, 5).map((notif: any) => (
+                    <div key={notif.id} className="p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/40 transition-colors">
                       <p className="text-sm font-medium">{notif.title}</p>
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{notif.body}</p>
                       <p className="text-[10px] text-muted-foreground mt-2">{format(new Date(notif.createdAt), 'MMM d, h:mm a')}</p>
                     </div>
                   ))}
-                  {statsData.recentActivity.latestNotifications.length > 3 && (
-                    <div className="pt-2 text-center">
-                      <Link href="/notifications" className="text-xs font-semibold text-primary hover:underline inline-flex items-center">
-                        View All <ChevronRight className="w-3 h-3 ml-1" />
-                      </Link>
-                    </div>
-                  )}
                 </>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center p-4">
@@ -224,23 +217,30 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+            <div className="mt-auto pt-3 border-t border-border/40 text-center">
+              <Link href="/notifications" className="text-xs font-semibold text-primary/80 hover:text-primary transition-colors inline-flex items-center justify-center w-full py-1">
+                View All <ChevronRight className="w-3 h-3 ml-1" />
+              </Link>
+            </div>
           </div>
 
           {/* Latest Connections */}
-          <div className="md:col-span-1 rounded-xl border border-border bg-card p-5 shadow-sm flex flex-col">
-            <h2 className="text-lg font-semibold flex items-center mb-4">
-              <Users className="w-4 h-4 mr-2 text-primary" /> Recent Connections
-            </h2>
-            <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+          <div className="md:col-span-1 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-5 shadow-sm flex flex-col h-[420px] hover:border-primary/40 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
+              <h2 className="text-lg font-semibold flex items-center tracking-tight">
+                <Users className="w-4 h-4 mr-2 text-primary" /> Recent Connections
+              </h2>
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-3 pr-2 scroll-smooth custom-scrollbar">
               {statsLoading ? (
                  <CardSkeleton count={1} />
               ) : statsData?.recentActivity.latestConnections?.length > 0 ? (
-                statsData.recentActivity.latestConnections.map((conn: any) => {
+                statsData.recentActivity.latestConnections.slice(0, 5).map((conn: any) => {
                   const otherUser = conn.senderId === user?.uid ? conn.receiver : conn.sender;
                   const profile = otherUser?.profile;
                   if (!profile) return null;
                   return (
-                    <Link key={conn.id} href={`/u/${profile.username}`} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/30 transition-colors group">
+                    <Link key={conn.id} href={`/u/${profile.username}`} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/40 transition-colors group">
                       <Avatar src={profile.photo} alt={profile.fullName} className="w-10 h-10 border border-border/80" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{profile.fullName}</p>
@@ -257,19 +257,26 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+            <div className="mt-auto pt-3 border-t border-border/40 text-center">
+              <button onClick={() => toast.info("View All Connections coming soon")} className="text-xs font-semibold text-primary/80 hover:text-primary transition-colors inline-flex items-center justify-center w-full py-1">
+                View All <ChevronRight className="w-3 h-3 ml-1" />
+              </button>
+            </div>
           </div>
 
           {/* Latest Projects */}
-          <div className="md:col-span-1 rounded-xl border border-border bg-card p-5 shadow-sm flex flex-col">
-            <h2 className="text-lg font-semibold flex items-center mb-4">
-              <Activity className="w-4 h-4 mr-2 text-primary" /> Discover Projects
-            </h2>
-            <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+          <div className="md:col-span-1 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-5 shadow-sm flex flex-col h-[420px] hover:border-primary/40 hover:shadow-md transition-all duration-300">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
+              <h2 className="text-lg font-semibold flex items-center tracking-tight">
+                <Activity className="w-4 h-4 mr-2 text-primary" /> Discover Projects
+              </h2>
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-3 pr-2 scroll-smooth custom-scrollbar">
               {statsLoading ? (
                  <CardSkeleton count={1} />
               ) : statsData?.recentActivity.latestProjects?.length > 0 ? (
-                statsData.recentActivity.latestProjects.map((project: any) => (
-                  <Link key={project.id} href={`/projects/${project.id}`} className="block p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/30 transition-colors group">
+                statsData.recentActivity.latestProjects.slice(0, 5).map((project: any) => (
+                  <Link key={project.id} href={`/projects/${project.id}`} className="block p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/40 transition-colors group">
                     <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{project.title}</p>
                     <div className="flex items-center justify-between mt-2">
                       <div className="flex items-center gap-1.5">
@@ -288,6 +295,11 @@ export default function DashboardPage() {
                   <p className="text-sm text-muted-foreground">No new projects</p>
                 </div>
               )}
+            </div>
+            <div className="mt-auto pt-3 border-t border-border/40 text-center">
+              <Link href="/projects" className="text-xs font-semibold text-primary/80 hover:text-primary transition-colors inline-flex items-center justify-center w-full py-1">
+                Browse More <ChevronRight className="w-3 h-3 ml-1" />
+              </Link>
             </div>
           </div>
         </div>
