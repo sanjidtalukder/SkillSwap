@@ -115,6 +115,28 @@ export async function POST(
       data: { hasUnread: true }
     });
 
+    const otherParticipants = await prisma.conversationParticipant.findMany({
+      where: {
+        conversationId,
+        userId: { not: user!.id }
+      },
+      select: { userId: true }
+    });
+
+    if (otherParticipants.length > 0) {
+      const senderName = newMessage.sender.profile?.fullName || "A user";
+      await prisma.notification.createMany({
+        data: otherParticipants.map(p => ({
+          recipientId: p.userId,
+          senderId: user!.id,
+          type: "message",
+          title: "New message received",
+          body: `${senderName} sent you a message`,
+          linkUrl: `/chat/${conversationId}`
+        }))
+      });
+    }
+
     return NextResponse.json({ success: true, data: newMessage });
   } catch (error) {
     return NextResponse.json(

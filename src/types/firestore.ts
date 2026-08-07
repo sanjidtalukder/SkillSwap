@@ -106,14 +106,15 @@ export interface ConnectionDocument {
  */
 export interface NotificationDocument {
   notificationId: string;
+  id?: string;
   recipientId: string;
-  senderId: string;
-  senderName: string;
+  senderId?: string;
+  senderName?: string;
   senderAvatarUrl?: string;
-  type: "connection_request" | "connection_accepted" | "new_message";
+  type: string;
   title: string;
   body: string;
   linkUrl?: string;
   read: boolean;
-  createdAt: Timestamp;
+  createdAt: any;
 }

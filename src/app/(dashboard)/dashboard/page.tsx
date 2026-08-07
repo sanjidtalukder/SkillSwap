@@ -191,7 +191,7 @@ export default function DashboardPage() {
               <h2 className="text-lg font-semibold flex items-center">
                 <Bell className="w-4 h-4 mr-2 text-primary" /> Notifications
               </h2>
-              <button className="text-xs text-primary hover:underline font-medium">View All</button>
+              <Link href="/notifications" className="text-xs text-primary hover:underline font-medium">View All</Link>
             </div>
             <div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
               {statsLoading ? (

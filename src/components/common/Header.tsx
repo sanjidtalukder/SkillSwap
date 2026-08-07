@@ -9,6 +9,7 @@ import { ROUTES, SITE_CONFIG } from "@/constants";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { authService } from "@/features/auth/services/authService";
+import { NotificationBell } from "@/features/notifications/components/NotificationBell";
 
 export const Header = memo(function Header() {
   const router = useRouter();
@@ -61,6 +62,7 @@ export const Header = memo(function Header() {
                 Dashboard
               </NavLink>
               <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border/40">
+                <NotificationBell />
                 <span className="hidden max-w-40 truncate text-foreground/60 sm:inline">
                   {user?.displayName || user?.email}
                 </span>
