@@ -6,8 +6,8 @@ import { AppProvider } from "@/providers/AppProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SkillSwap | Student Collaboration Platform",
-  description: "Swap skills, collaborate on projects, and build real-world experience together.",
+  title: "SkillSwap",
+  description: "Student Collaboration Platform for Skill Exchange, Project Collaboration, and Team Communication.",
 };
 
 import { Toaster } from "sonner";
