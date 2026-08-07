@@ -14,6 +14,7 @@ import { fetchWithAuth } from "@/lib/api-client";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { ProjectJoinRequests } from "@/features/projects/components/ProjectJoinRequests";
 import { useWorkspaceAccess } from "@/hooks/useWorkspaceAccess";
+import { ProjectDescription } from "@/features/projects/components/ProjectDescription";
 import { Calendar, Users, FolderOpen, Code, CheckCircle, XCircle } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 
@@ -150,9 +151,9 @@ export default function ProjectDetailsPage() {
               </Badge>
               <Badge variant="outline">{project.difficulty}</Badge>
             </div>
-            <h1 className="text-3xl font-bold md:text-4xl">{project.title}</h1>
-            <div className="flex items-center gap-2">
-              <Avatar src={project.ownerPhoto} alt={project.ownerName} />
+            <h1 className="text-3xl font-bold md:text-5xl tracking-tight leading-tight">{project.title}</h1>
+            <div className="flex items-center gap-3 pt-2">
+              <Avatar src={project.ownerPhoto} alt={project.ownerName} size="md" />
               <div className="text-sm">
                 <p className="text-muted-foreground">Created by</p>
                 <Link href={`/profile/${project.ownerId}`} className="font-medium hover:underline">
@@ -161,96 +162,98 @@ export default function ProjectDetailsPage() {
               </div>
             </div>
           </div>
-          
-          <div className="flex flex-col gap-3 md:min-w-[150px]">
-            {isOwner ? (
-              <>
-                <Link href={`/projects/${project.id}/edit`}>
-                  <Button variant="secondary" className="w-full">Edit Project</Button>
-                </Link>
-                <Button variant="destructive" className="w-full" onClick={handleDelete}>Delete Project</Button>
-              </>
-            ) : isMember || project.joinRequestStatus === "accepted" ? (
-              <Button className="w-full" onClick={() => openWorkspace(project.id)} isLoading={isVerifying}>
-                Open Workspace
-              </Button>
-            ) : project.joinRequestStatus === "pending" ? (
-              <Button disabled variant="outline" className="w-full">Request Sent</Button>
-            ) : project.joinRequestStatus === "rejected" ? (
-              <Button 
-                onClick={handleJoinProject} 
-                isLoading={isJoining}
-                disabled={project.status !== "active"}
-                className="w-full"
-              >
-                Request Workspace Access
-              </Button>
-            ) : (
-              <Button 
-                onClick={handleJoinProject} 
-                isLoading={isJoining}
-                disabled={project.status !== "active"}
-                className="w-full"
-              >
-                Join Workspace
-              </Button>
-            )}
-          </div>
         </div>
 
         {/* Content Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative items-start">
           
-          <div className="md:col-span-2 space-y-8">
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold">About the Project</h2>
-              <p className="whitespace-pre-wrap text-muted-foreground leading-relaxed">
-                {project.description}
-              </p>
-            </section>
+          <div className="md:col-span-2 space-y-10">
+            <ProjectDescription description={project.description} />
 
             {isOwner && (
-              <section className="space-y-3 pt-6 border-t border-border/40">
-                <h2 className="text-xl font-semibold">Project Join Requests</h2>
+              <section className="space-y-4 pt-6 border-t border-border/40">
+                <h2 className="text-xl font-semibold tracking-tight">Project Join Requests</h2>
                 <ProjectJoinRequests projectId={project.id} />
               </section>
             )}
 
-            <section className="space-y-3 pt-6 border-t border-border/40">
-              <h2 className="text-xl font-semibold">Required Skills</h2>
+            <section className="space-y-4 pt-6 border-t border-border/40">
+              <h2 className="text-xl font-semibold tracking-tight">Required Skills</h2>
               {project.requiredSkills.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {project.requiredSkills.map(skill => (
-                    <Badge key={skill} variant="secondary">{skill}</Badge>
+                    <Badge key={skill} variant="secondary" className="px-3 py-1 text-sm font-medium">{skill}</Badge>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Not specified</p>
+                <p className="text-sm text-muted-foreground italic">Not specified</p>
               )}
             </section>
 
-            <section className="space-y-3">
-              <h2 className="text-xl font-semibold">Technologies</h2>
+            <section className="space-y-4 pt-2">
+              <h2 className="text-xl font-semibold tracking-tight">Technologies</h2>
               {project.technologies.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {project.technologies.map(tech => (
-                    <Badge key={tech} variant="outline">
-                      <Code className="mr-1 h-3 w-3 inline" />
+                    <Badge key={tech} variant="outline" className="px-3 py-1 text-sm bg-background">
+                      <Code className="mr-1.5 h-3.5 w-3.5 inline text-muted-foreground" />
                       {tech}
                     </Badge>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Not specified</p>
+                <p className="text-sm text-muted-foreground italic">Not specified</p>
               )}
             </section>
 
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
-            <div className="rounded-xl border border-border/40 bg-card p-5 space-y-4">
-              <h3 className="font-semibold text-lg">Project Details</h3>
+          <div className="space-y-6 md:sticky top-24">
+            
+            <div className="rounded-xl border border-border/40 bg-card p-6 shadow-sm space-y-5">
+              
+              <div className="flex flex-col gap-3">
+                {isOwner ? (
+                  <>
+                    <Button className="w-full" onClick={() => openWorkspace(project.id)} isLoading={isVerifying}>
+                      Open Workspace
+                    </Button>
+                    <Link href={`/projects/${project.id}/edit`}>
+                      <Button variant="secondary" className="w-full">Edit Project</Button>
+                    </Link>
+                    <Button variant="destructive" className="w-full" onClick={handleDelete}>Delete Project</Button>
+                  </>
+                ) : isMember || project.joinRequestStatus === "accepted" ? (
+                  <Button className="w-full" onClick={() => openWorkspace(project.id)} isLoading={isVerifying}>
+                    Open Workspace
+                  </Button>
+                ) : project.joinRequestStatus === "pending" ? (
+                  <Button disabled variant="outline" className="w-full">Request Sent</Button>
+                ) : project.joinRequestStatus === "rejected" ? (
+                  <Button 
+                    onClick={handleJoinProject} 
+                    isLoading={isJoining}
+                    disabled={project.status !== "active"}
+                    className="w-full"
+                  >
+                    Request Workspace Access
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={handleJoinProject} 
+                    isLoading={isJoining}
+                    disabled={project.status !== "active"}
+                    className="w-full"
+                  >
+                    Join Workspace
+                  </Button>
+                )}
+              </div>
+
+              <div className="h-px bg-border/40 w-full" />
+
+              <h3 className="font-semibold text-lg tracking-tight">Project Details</h3>
               
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between items-center">
@@ -279,8 +282,8 @@ export default function ProjectDetailsPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border/40 bg-card p-5 space-y-4">
-              <h3 className="font-semibold text-lg">Team Members</h3>
+            <div className="rounded-xl border border-border/40 bg-card p-6 shadow-sm space-y-5">
+              <h3 className="font-semibold text-lg tracking-tight">Team Members</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <Avatar src={project.ownerPhoto} alt={project.ownerName} size="md" />
@@ -288,8 +291,8 @@ export default function ProjectDetailsPage() {
                     <p className="truncate text-sm font-medium">{project.ownerName}</p>
                     <p className="text-xs text-muted-foreground truncate">{project.ownerUniversity || "University"}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="success" className="text-[10px] px-1.5 py-0">Owner</Badge>
-                      <Link href={`/u/${project.ownerUsername || project.ownerId}`} className="text-[10px] text-primary hover:underline">View Profile</Link>
+                      <Badge variant="secondary" className="text-[10px] px-2 py-0.5 font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">Owner</Badge>
+                      <Link href={`/u/${project.ownerUsername || project.ownerId}`} className="text-xs text-muted-foreground hover:text-primary transition-colors">View Profile</Link>
                     </div>
                   </div>
                 </div>
@@ -301,8 +304,8 @@ export default function ProjectDetailsPage() {
                       <p className="truncate text-sm font-medium">{member.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{member.university || "University"}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] text-muted-foreground capitalize">{member.role}</span>
-                        <Link href={`/u/${member.username || member.userId}`} className="text-[10px] text-primary hover:underline">View Profile</Link>
+                        <span className="text-xs font-medium text-muted-foreground capitalize bg-muted/50 px-2 py-0.5 rounded-full">{member.role}</span>
+                        <Link href={`/u/${member.username || member.userId}`} className="text-xs text-muted-foreground hover:text-primary transition-colors">View Profile</Link>
                       </div>
                     </div>
                   </div>
