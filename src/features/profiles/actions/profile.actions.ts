@@ -10,11 +10,11 @@ const getCachedProfile = unstable_cache(
   { revalidate: 60 }
 );
 
-const getCachedCompletedProfiles = unstable_cache(
-  async () => listCompletedProfiles(),
-  ["completed-profiles"],
+const getCachedCompletedProfiles = (limit?: number) => unstable_cache(
+  async () => listCompletedProfiles({ limit }),
+  [`completed-profiles-${limit || 'all'}`],
   { revalidate: 60 }
-);
+)();
 
 export async function getProfileAction(uid: string): Promise<{ data?: UserProfile | null; error?: string }> {
   try {
@@ -25,9 +25,9 @@ export async function getProfileAction(uid: string): Promise<{ data?: UserProfil
   }
 }
 
-export async function listCompletedProfilesAction(): Promise<{ data?: UserProfile[]; error?: string }> {
+export async function listCompletedProfilesAction(limit?: number): Promise<{ data?: UserProfile[]; error?: string }> {
   try {
-    const profiles = await getCachedCompletedProfiles();
+    const profiles = await getCachedCompletedProfiles(limit);
     return { data: profiles };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Failed to list profiles" };

@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Alert } from "@/components/ui/Alert";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";
@@ -14,7 +14,6 @@ import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { ProfileCard } from "@/features/profiles/components/ProfileCard";
 import { useConnectionRequest } from "@/features/profiles/hooks/useConnectionRequest";
-import { useCompletedProfiles } from "@/features/profiles/hooks/useCompletedProfiles";
 import { useProfileRedirect } from "@/features/profiles/hooks/useProfileStatus";
 import { fetchWithAuth } from "@/lib/api-client";
 import { format } from "date-fns";
@@ -22,22 +21,31 @@ import { Activity, Briefcase, Users, Bell, Plus, Search, Edit, CheckCircle, Cloc
 import { ROUTES } from "@/constants";
 import { toast } from "sonner";
 import { ConnectionDialog } from "@/components/common/ConnectionDialog";
+import { Pagination } from "@/components/ui/Pagination";
 
 export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const { user, loading: authLoading } = useAuth();
   const [startingChatId, setStartingChatId] = useState<string | null>(null);
+  
   const {
     isCheckingProfile,
     profileCompleted,
     error: profileError,
   } = useProfileRedirect(user, authLoading, { redirectWhenIncomplete: true });
-  
-  const { profiles, isLoading, error, reload } = useCompletedProfiles(
-    Boolean(user) && !authLoading && profileCompleted === true
+
+  const [activeTab, setActiveTab] = useState<"skills" | "projects">(
+    searchParams.get("tab") === "projects" ? "projects" : "skills"
   );
-  
+
+  // Pagination states from URL
+  const skillPage = Math.max(1, parseInt(searchParams.get("skillPage") || "1", 10));
+  const createdPage = Math.max(1, parseInt(searchParams.get("createdPage") || "1", 10));
+  const joinedPage = Math.max(1, parseInt(searchParams.get("joinedPage") || "1", 10));
+  const requestsPage = Math.max(1, parseInt(searchParams.get("requestsPage") || "1", 10));
+
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogStatus, setDialogStatus] = useState<"not_connected" | "pending">("not_connected");
@@ -48,20 +56,43 @@ export default function DashboardPage() {
     sendConnectionRequest,
   } = useConnectionRequest(user);
 
-  const [activeTab, setActiveTab] = useState<"skills" | "projects">(
-    searchParams.get("tab") === "projects" ? "projects" : "skills"
-  );
-  const [projectData, setProjectData] = useState<any>(null);
-  const [projectLoading, setProjectLoading] = useState(false);
-
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsData, setStatsData] = useState<any>(null);
 
-  const visibleProfiles = useMemo(
-    () => (user ? profiles.filter((profile) => profile.uid !== user.uid) : profiles),
-    [profiles, user]
-  );
+  const [skillsData, setSkillsData] = useState<any>(null);
+  const [skillsLoading, setSkillsLoading] = useState(true);
 
+  const [projectData, setProjectData] = useState<any>(null);
+  const [projectLoading, setProjectLoading] = useState(true);
+
+  // Update URL helper
+  const updateUrl = useCallback((paramsToUpdate: Record<string, string | number>) => {
+    const query = new URLSearchParams(searchParams.toString());
+    Object.entries(paramsToUpdate).forEach(([key, value]) => {
+      query.set(key, value.toString());
+    });
+    router.push(`${pathname}?${query.toString()}`, { scroll: false });
+  }, [pathname, router, searchParams]);
+
+  // Handle Tab Change
+  const handleTabChange = (tab: "skills" | "projects") => {
+    setActiveTab(tab);
+    updateUrl({ tab });
+  };
+
+  // Handle Page Change
+  const handlePageChange = (type: "skill" | "created" | "joined" | "requests", newPage: number) => {
+    updateUrl({ [`${type}Page`]: newPage });
+    // Smooth scroll to tabs area roughly
+    const tabsElement = document.getElementById("dashboard-tabs");
+    if (tabsElement) {
+      tabsElement.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.scrollTo({ top: 500, behavior: "smooth" }); 
+    }
+  };
+
+  // Fetch Dashboard Stats
   useEffect(() => {
     if (user && profileCompleted) {
       setStatsLoading(true);
@@ -74,19 +105,57 @@ export default function DashboardPage() {
     }
   }, [user, profileCompleted]);
 
-  useEffect(() => {
-    if (activeTab === "projects" && user && !projectData) {
-      setProjectLoading(true);
-      fetchWithAuth("/api/projects/me")
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) {
-            setProjectData(data.data);
-          }
-        })
-        .finally(() => setProjectLoading(false));
+  // Fetch Skills
+  const fetchSkills = useCallback(async () => {
+    if (!user || profileCompleted !== true) return;
+    setSkillsLoading(true);
+    try {
+      const res = await fetchWithAuth(`/api/skills?page=${skillPage}&limit=10`);
+      if (res.ok) {
+        const data = await res.json();
+        setSkillsData(data.data);
+      }
+    } finally {
+      setSkillsLoading(false);
     }
-  }, [activeTab, user, projectData]);
+  }, [user, profileCompleted, skillPage]);
+
+  useEffect(() => {
+    if (!authLoading && activeTab === "skills") {
+      void fetchSkills();
+    }
+  }, [authLoading, activeTab, fetchSkills]);
+
+  const visibleProfiles = useMemo(
+    () => (user && skillsData?.items ? skillsData.items.filter((profile: any) => profile.uid !== user.uid) : []),
+    [skillsData, user]
+  );
+
+  // Fetch Projects
+  const fetchProjects = useCallback(async () => {
+    if (!user || profileCompleted !== true) return;
+    setProjectLoading(true);
+    try {
+      const query = new URLSearchParams();
+      query.set("createdPage", createdPage.toString());
+      query.set("joinedPage", joinedPage.toString());
+      query.set("requestsPage", requestsPage.toString());
+      
+      const res = await fetchWithAuth(`/api/projects/me?${query.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setProjectData(data.data);
+      }
+    } finally {
+      setProjectLoading(false);
+    }
+  }, [user, profileCompleted, createdPage, joinedPage, requestsPage]);
+
+  useEffect(() => {
+    if (!authLoading && activeTab === "projects") {
+      void fetchProjects();
+    }
+  }, [authLoading, activeTab, fetchProjects]);
 
   const handleStartChat = async (uid: string) => {
     if (startingChatId) return;
@@ -304,17 +373,17 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Legacy Content: Tabs */}
-        <div className="mt-12 space-y-6">
+        {/* Dynamic Content: Tabs */}
+        <div id="dashboard-tabs" className="mt-12 space-y-6 scroll-mt-24">
           <div className="flex space-x-2 border-b border-border/40 pb-px">
             <button
-              onClick={() => setActiveTab("skills")}
+              onClick={() => handleTabChange("skills")}
               className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors ${activeTab === "skills" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:bg-muted"}`}
             >
               Skill Feed
             </button>
             <button
-              onClick={() => setActiveTab("projects")}
+              onClick={() => handleTabChange("projects")}
               className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors ${activeTab === "projects" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:bg-muted"}`}
             >
               My Projects
@@ -323,28 +392,37 @@ export default function DashboardPage() {
 
           {activeTab === "skills" && (
             <div className="space-y-6">
-              {isLoading ? (
+              {skillsLoading ? (
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  <CardSkeleton count={6} />
+                  <CardSkeleton count={10} />
                 </div>
               ) : visibleProfiles.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {visibleProfiles.map((profile) => (
-                    <ProfileCard
-                      key={profile.uid}
-                      profile={profile}
-                      onConnect={sendConnectionRequest}
-                      onMessage={handleStartChat}
-                      isConnecting={pendingRecipientId === profile.uid || startingChatId === profile.uid}
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    {visibleProfiles.map((profile: any) => (
+                      <ProfileCard
+                        key={profile.uid}
+                        profile={profile}
+                        onConnect={sendConnectionRequest}
+                        onMessage={handleStartChat}
+                        isConnecting={pendingRecipientId === profile.uid || startingChatId === profile.uid}
+                      />
+                    ))}
+                  </div>
+                  {skillsData?.totalPages > 1 && (
+                    <Pagination
+                      currentPage={skillsData.currentPage}
+                      totalPages={skillsData.totalPages}
+                      onPageChange={(page) => handlePageChange("skill", page)}
                     />
-                  ))}
+                  )}
                 </div>
               ) : (
                 <EmptyState
                   title="No completed profiles yet"
                   description="Completed student profiles will appear here as the SkillSwap community grows."
                   actionLabel="Refresh Feed"
-                  onAction={reload}
+                  onAction={() => fetchSkills()}
                 />
               )}
             </div>
@@ -358,29 +436,38 @@ export default function DashboardPage() {
                 <>
                   <section>
                     <h2 className="text-xl font-bold mb-4">Projects Created By Me</h2>
-                    {projectData.createdProjects.length > 0 ? (
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {projectData.createdProjects.map((p: any) => (
-                          <div key={p.id} className="flex flex-col p-5 border border-border/60 rounded-xl bg-card shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start mb-2">
-                              <Link href={`/projects/${p.id}`} className="font-semibold text-lg hover:text-primary transition-colors line-clamp-1">{p.title}</Link>
-                              <Badge variant={p.status === "active" ? "success" : "secondary"}>{p.status}</Badge>
+                    {projectData.createdProjects.items.length > 0 ? (
+                      <div className="space-y-6">
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                          {projectData.createdProjects.items.map((p: any) => (
+                            <div key={p.id} className="flex flex-col p-5 border border-border/60 rounded-xl bg-card shadow-sm hover:shadow-md transition-shadow">
+                              <div className="flex justify-between items-start mb-2">
+                                <Link href={`/projects/${p.id}`} className="font-semibold text-lg hover:text-primary transition-colors line-clamp-1">{p.title}</Link>
+                                <Badge variant={p.status === "active" ? "success" : "secondary"}>{p.status}</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{p.description}</p>
+                              <div className="flex justify-between items-center text-xs text-muted-foreground pt-4 border-t border-border/40 mb-4">
+                                <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> Team: {p._count.members + 1} / {p.teamSize}</span>
+                                {p._count.joinRequests > 0 && (
+                                  <Badge variant="warning" className="px-2 py-0 animate-pulse text-[10px]">
+                                    Pending Requests: {p._count.joinRequests}
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="mt-auto pt-2 grid grid-cols-2 gap-2">
+                                <Button variant="outline" size="sm" onClick={() => router.push(`/projects/${p.id}/edit`)} className="w-full text-xs">Edit Project</Button>
+                                <Button variant="primary" size="sm" onClick={() => router.push(`/projects/${p.id}/workspace`)} className="w-full text-xs">Open Workspace</Button>
+                              </div>
                             </div>
-                            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{p.description}</p>
-                            <div className="flex justify-between items-center text-xs text-muted-foreground pt-4 border-t border-border/40 mb-4">
-                              <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> Team: {p._count.members + 1} / {p.teamSize}</span>
-                              {p._count.joinRequests > 0 && (
-                                <Badge variant="warning" className="px-2 py-0 animate-pulse text-[10px]">
-                                  Pending Requests: {p._count.joinRequests}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="mt-auto pt-2 grid grid-cols-2 gap-2">
-                              <Button variant="outline" size="sm" onClick={() => router.push(`/projects/${p.id}/edit`)} className="w-full text-xs">Edit Project</Button>
-                              <Button variant="primary" size="sm" onClick={() => router.push(`/projects/${p.id}/workspace`)} className="w-full text-xs">Open Workspace</Button>
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                        {projectData.createdProjects.totalPages > 1 && (
+                          <Pagination
+                            currentPage={projectData.createdProjects.currentPage}
+                            totalPages={projectData.createdProjects.totalPages}
+                            onPageChange={(page) => handlePageChange("created", page)}
+                          />
+                        )}
                       </div>
                     ) : (
                       <div className="p-6 border border-dashed rounded-xl text-center">
@@ -392,24 +479,33 @@ export default function DashboardPage() {
 
                   <section>
                     <h2 className="text-xl font-bold mb-4">Projects I Joined</h2>
-                    {projectData.joinedProjects.length > 0 ? (
-                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {projectData.joinedProjects.map((p: any) => (
-                          <div key={p.id} className="flex flex-col p-5 border border-border/60 rounded-xl bg-card shadow-sm hover:shadow-md transition-shadow">
-                            <Link href={`/projects/${p.id}`} className="font-semibold text-lg hover:text-primary transition-colors line-clamp-1 mb-2 block">{p.title}</Link>
-                            <div className="flex justify-between items-center text-xs text-muted-foreground pt-4 border-t border-border/40 mb-4">
-                              <div className="flex items-center gap-2">
-                                <Avatar src={p.owner?.profile?.photo} alt="Owner" className="w-6 h-6" />
-                                <span><span className="font-medium text-foreground">{p.owner?.profile?.fullName || "User"}</span></span>
+                    {projectData.joinedProjects.items.length > 0 ? (
+                      <div className="space-y-6">
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                          {projectData.joinedProjects.items.map((p: any) => (
+                            <div key={p.id} className="flex flex-col p-5 border border-border/60 rounded-xl bg-card shadow-sm hover:shadow-md transition-shadow">
+                              <Link href={`/projects/${p.id}`} className="font-semibold text-lg hover:text-primary transition-colors line-clamp-1 mb-2 block">{p.title}</Link>
+                              <div className="flex justify-between items-center text-xs text-muted-foreground pt-4 border-t border-border/40 mb-4">
+                                <div className="flex items-center gap-2">
+                                  <Avatar src={p.owner?.profile?.photo} alt="Owner" className="w-6 h-6" />
+                                  <span><span className="font-medium text-foreground">{p.owner?.profile?.fullName || "User"}</span></span>
+                                </div>
+                                <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> {p._count?.members ? p._count.members + 1 : 1} / {p.teamSize}</span>
                               </div>
-                              <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> {p._count?.members ? p._count.members + 1 : 1} / {p.teamSize}</span>
+                              <div className="mt-auto pt-2 grid grid-cols-2 gap-2">
+                                <Button variant="primary" size="sm" onClick={() => router.push(`/projects/${p.id}/workspace`)} className="w-full text-xs">Open Workspace</Button>
+                                <Button variant="outline" size="sm" onClick={() => toast.error("Leave Project coming soon")} className="w-full text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground">Leave Project</Button>
+                              </div>
                             </div>
-                            <div className="mt-auto pt-2 grid grid-cols-2 gap-2">
-                              <Button variant="primary" size="sm" onClick={() => router.push(`/projects/${p.id}/workspace`)} className="w-full text-xs">Open Workspace</Button>
-                              <Button variant="outline" size="sm" onClick={() => toast.error("Leave Project coming soon")} className="w-full text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground">Leave Project</Button>
-                            </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                        {projectData.joinedProjects.totalPages > 1 && (
+                          <Pagination
+                            currentPage={projectData.joinedProjects.currentPage}
+                            totalPages={projectData.joinedProjects.totalPages}
+                            onPageChange={(page) => handlePageChange("joined", page)}
+                          />
+                        )}
                       </div>
                     ) : (
                       <div className="p-6 border border-dashed rounded-xl text-center">
@@ -422,23 +518,34 @@ export default function DashboardPage() {
                   <section>
                     <h2 className="text-xl font-bold mb-4">Pending Join Requests</h2>
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {projectData.pendingRequests.length > 0 ? (
-                         projectData.pendingRequests.map((r: any) => (
-                          <div key={r.id} className="flex flex-col bg-card border border-border/60 rounded-xl p-5 shadow-sm">
-                            <div className="flex items-start justify-between mb-2">
-                              <span className="block text-foreground font-semibold line-clamp-1">{r.project.title}</span>
-                              <Badge variant="warning" className="text-[10px]">Pending</Badge>
-                            </div>
-                            <div className="flex items-center gap-2 mt-2">
-                               <p className="text-xs text-muted-foreground">Owner: <span className="font-medium text-foreground">{r.project.owner?.profile?.fullName || "Unknown"}</span></p>
-                            </div>
-                            <span className="text-xs text-muted-foreground mt-2 block mb-4">Requested: {format(new Date(r.createdAt), 'MMM d, yyyy')}</span>
-                            
-                            <div className="mt-auto pt-4 border-t border-border/40">
-                              <Button variant="outline" size="sm" onClick={() => toast.error("Cancel Request coming soon")} className="w-full text-xs">Cancel Request</Button>
-                            </div>
+                      {projectData.pendingRequests.items.length > 0 ? (
+                        <div className="space-y-6 col-span-full">
+                          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            {projectData.pendingRequests.items.map((r: any) => (
+                              <div key={r.id} className="flex flex-col bg-card border border-border/60 rounded-xl p-5 shadow-sm">
+                                <div className="flex items-start justify-between mb-2">
+                                  <span className="block text-foreground font-semibold line-clamp-1">{r.project.title}</span>
+                                  <Badge variant="warning" className="text-[10px]">Pending</Badge>
+                                </div>
+                                <div className="flex items-center gap-2 mt-2">
+                                  <p className="text-xs text-muted-foreground">Owner: <span className="font-medium text-foreground">{r.project.owner?.profile?.fullName || "Unknown"}</span></p>
+                                </div>
+                                <span className="text-xs text-muted-foreground mt-2 block mb-4">Requested: {format(new Date(r.createdAt), 'MMM d, yyyy')}</span>
+                                
+                                <div className="mt-auto pt-4 border-t border-border/40">
+                                  <Button variant="outline" size="sm" onClick={() => toast.error("Cancel Request coming soon")} className="w-full text-xs">Cancel Request</Button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        ))
+                          {projectData.pendingRequests.totalPages > 1 && (
+                            <Pagination
+                              currentPage={projectData.pendingRequests.currentPage}
+                              totalPages={projectData.pendingRequests.totalPages}
+                              onPageChange={(page) => handlePageChange("requests", page)}
+                            />
+                          )}
+                        </div>
                       ) : (
                          <div className="col-span-full p-6 border border-dashed rounded-xl text-center">
                            <p className="text-sm text-muted-foreground">No pending join requests.</p>
@@ -487,3 +594,4 @@ function StatCard({ title, value, icon, loading }: { title: string, value: numbe
     </div>
   );
 }
+

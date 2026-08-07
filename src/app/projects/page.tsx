@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -11,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/componen
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { Pagination } from "@/components/ui/Pagination";
 import { fetchWithAuth } from "@/lib/api-client";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { Search, Plus, Filter, Users, Calendar, FolderOpen, Code } from "lucide-react";
@@ -34,20 +36,50 @@ interface Project {
   createdAt: string;
 }
 
+interface PaginationData {
+  items: Project[];
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 export default function ProjectsPage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
-  const [projects, setProjects] = useState<Project[]>([]);
+  
+  const initialPage = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  
+  const [paginationData, setPaginationData] = useState<PaginationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("");
-  const [difficulty, setDifficulty] = useState("");
+  
+  const [search, setSearch] = useState(searchParams.get("search") || "");
+  const [category, setCategory] = useState(searchParams.get("category") || "");
+  const [difficulty, setDifficulty] = useState(searchParams.get("difficulty") || "");
 
-  const fetchProjects = useCallback(async () => {
+  const limit = 10;
+
+  const updateUrl = useCallback((newPage: number, newSearch: string, newCategory: string, newDifficulty: string) => {
+    const query = new URLSearchParams();
+    if (newPage > 1) query.set("page", newPage.toString());
+    if (newSearch) query.set("search", newSearch);
+    if (newCategory) query.set("category", newCategory);
+    if (newDifficulty) query.set("difficulty", newDifficulty);
+    
+    router.push(`${pathname}?${query.toString()}`, { scroll: false });
+  }, [pathname, router]);
+
+  const fetchProjects = useCallback(async (pageToFetch: number) => {
     setIsLoading(true);
     setError(null);
     try {
       const query = new URLSearchParams();
+      query.set("page", pageToFetch.toString());
+      query.set("limit", limit.toString());
       if (search) query.set("search", search);
       if (category) query.set("category", category);
       if (difficulty) query.set("difficulty", difficulty);
@@ -57,7 +89,7 @@ export default function ProjectsPage() {
         throw new Error("Failed to load projects");
       }
       const data = await response.json();
-      setProjects(data.data || []);
+      setPaginationData(data.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch projects");
     } finally {
@@ -67,15 +99,27 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     if (!authLoading) {
-      void fetchProjects();
+      void fetchProjects(initialPage);
     }
-  }, [authLoading, fetchProjects]);
+  }, [authLoading, fetchProjects, initialPage]);
 
-  // Debounced search logic could be added here, but for simplicity we rely on manual submit or onBlur
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchProjects();
+    updateUrl(1, search, category, difficulty);
   };
+
+  const handleFilterChange = (type: "category" | "difficulty", value: string) => {
+    if (type === "category") setCategory(value);
+    if (type === "difficulty") setDifficulty(value);
+    updateUrl(1, search, type === "category" ? value : category, type === "difficulty" ? value : difficulty);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    updateUrl(newPage, search, category, difficulty);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const projects = paginationData?.items || [];
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -112,7 +156,7 @@ export default function ProjectsPage() {
           </div>
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => handleFilterChange("category", e.target.value)}
             className="rounded-md border border-border/80 bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="">All Categories</option>
@@ -124,7 +168,7 @@ export default function ProjectsPage() {
           </select>
           <select
             value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
+            onChange={(e) => handleFilterChange("difficulty", e.target.value)}
             className="rounded-md border border-border/80 bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="">All Difficulties</option>
@@ -141,83 +185,93 @@ export default function ProjectsPage() {
 
         {isLoading || authLoading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <CardSkeleton count={6} />
+            <CardSkeleton count={limit} />
           </div>
         ) : projects.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => (
-              <Card
-                key={project.id}
-                className="group flex h-full flex-col hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10"
-              >
-                <CardHeader className="space-y-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <CardTitle className="truncate text-lg">{project.title}</CardTitle>
-                    <Badge variant={project.status === "active" ? "success" : "secondary"}>
-                      {project.status.toUpperCase()}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Avatar src={project.ownerPhoto} alt={project.ownerName} size="sm" />
-                    <span className="truncate text-xs text-muted-foreground">
-                      by {project.ownerName}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col gap-4">
-                  <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                    {project.description}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground/80">
-                    <div className="flex items-center gap-1">
-                      <FolderOpen className="h-3 w-3" />
-                      <span className="truncate">{project.category}</span>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {projects.map((project) => (
+                <Card
+                  key={project.id}
+                  className="group flex h-full flex-col hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300"
+                >
+                  <CardHeader className="space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <CardTitle className="truncate text-lg">{project.title}</CardTitle>
+                      <Badge variant={project.status === "active" ? "success" : "secondary"}>
+                        {project.status.toUpperCase()}
+                      </Badge>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      <span>
-                        {project.currentMembers + 1}/{project.teamSize} Team
+                    <div className="flex items-center gap-2">
+                      <Avatar src={project.ownerPhoto} alt={project.ownerName} size="sm" />
+                      <span className="truncate text-xs text-muted-foreground">
+                        by {project.ownerName}
                       </span>
                     </div>
-                    {project.deadline && (
-                      <div className="col-span-2 flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>Ends {formatDistanceToNow(new Date(project.deadline))}</span>
+                  </CardHeader>
+                  <CardContent className="flex flex-1 flex-col gap-4">
+                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                      {project.description}
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground/80">
+                      <div className="flex items-center gap-1">
+                        <FolderOpen className="h-3 w-3" />
+                        <span className="truncate">{project.category}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        <span>
+                          {project.currentMembers + 1}/{project.teamSize} Team
+                        </span>
+                      </div>
+                      {project.deadline && (
+                        <div className="col-span-2 flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>Ends {formatDistanceToNow(new Date(project.deadline))}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {project.technologies.length > 0 && (
+                      <div className="mt-auto space-y-1.5">
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+                          <Code className="h-3 w-3" />
+                          <span>Tech Stack</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {project.technologies.slice(0, 3).map((tech) => (
+                            <Badge key={tech} variant="outline" className="px-1.5 py-0 text-[10px]">
+                              {tech}
+                            </Badge>
+                          ))}
+                          {project.technologies.length > 3 && (
+                            <span className="text-[10px] text-muted-foreground">
+                              +{project.technologies.length - 3}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     )}
-                  </div>
+                  </CardContent>
+                  <CardFooter className="border-t border-border/40 pt-4">
+                    <Link href={`/projects/${project.id}`} className="w-full">
+                      <Button variant="secondary" className="w-full">
+                        View Details
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
 
-                  {project.technologies.length > 0 && (
-                    <div className="mt-auto space-y-1.5">
-                      <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
-                        <Code className="h-3 w-3" />
-                        <span>Tech Stack</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {project.technologies.slice(0, 3).map((tech) => (
-                          <Badge key={tech} variant="outline" className="px-1.5 py-0 text-[10px]">
-                            {tech}
-                          </Badge>
-                        ))}
-                        {project.technologies.length > 3 && (
-                          <span className="text-[10px] text-muted-foreground">
-                            +{project.technologies.length - 3}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter className="border-t border-border/40 pt-4">
-                  <Link href={`/projects/${project.id}`} className="w-full">
-                    <Button variant="secondary" className="w-full">
-                      View Details
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            ))}
+            {paginationData && paginationData.totalPages > 1 && (
+              <Pagination
+                currentPage={paginationData.currentPage}
+                totalPages={paginationData.totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
           </div>
         ) : (
           <EmptyState
@@ -228,7 +282,7 @@ export default function ProjectsPage() {
               setSearch("");
               setCategory("");
               setDifficulty("");
-              fetchProjects();
+              updateUrl(1, "", "", "");
             }}
           />
         )}

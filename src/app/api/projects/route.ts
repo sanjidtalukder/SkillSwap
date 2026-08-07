@@ -5,11 +5,15 @@ import { Prisma } from "@prisma/client";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
+    const searchParams = new URL(request.url).searchParams;
     const search = searchParams.get("search");
     const category = searchParams.get("category");
     const difficulty = searchParams.get("difficulty");
     const status = searchParams.get("status") || "active";
+    
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.max(1, parseInt(searchParams.get("limit") || "10", 10));
+    const skip = (page - 1) * limit;
 
     const where: Prisma.ProjectWhereInput = { status };
 
@@ -24,37 +28,42 @@ export async function GET(request: Request) {
     if (category) where.category = category;
     if (difficulty) where.difficulty = difficulty;
 
-    const projects = await prisma.project.findMany({
-      where,
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        category: true,
-        requiredSkills: true,
-        technologies: true,
-        teamSize: true,
-        difficulty: true,
-        deadline: true,
-        status: true,
-        createdAt: true,
-        owner: {
-          select: {
-            firebaseUid: true,
-            profile: {
-              select: {
-                fullName: true,
-                photo: true,
+    const [totalItems, projects] = await Promise.all([
+      prisma.project.count({ where }),
+      prisma.project.findMany({
+        where,
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          category: true,
+          requiredSkills: true,
+          technologies: true,
+          teamSize: true,
+          difficulty: true,
+          deadline: true,
+          status: true,
+          createdAt: true,
+          owner: {
+            select: {
+              firebaseUid: true,
+              profile: {
+                select: {
+                  fullName: true,
+                  photo: true,
+                }
               }
             }
+          },
+          _count: {
+            select: { members: true }
           }
         },
-        _count: {
-          select: { members: true }
-        }
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+      })
+    ]);
 
     const formattedProjects = projects.map((p) => ({
       id: p.id,
@@ -74,7 +83,19 @@ export async function GET(request: Request) {
       createdAt: p.createdAt,
     }));
 
-    return NextResponse.json({ success: true, data: formattedProjects });
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return NextResponse.json({ 
+      success: true, 
+      data: {
+        items: formattedProjects,
+        currentPage: page,
+        totalPages,
+        totalItems,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      } 
+    });
   } catch (error) {
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : "Unknown error" },

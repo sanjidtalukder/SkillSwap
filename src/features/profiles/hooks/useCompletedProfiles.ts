@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { UserProfile } from "@/features/profiles/types/profile";
 import { listCompletedProfilesAction } from "@/features/profiles/actions/profile.actions";
 
-export function useCompletedProfiles(enabled = true) {
+export function useCompletedProfiles(enabled = true, limit?: number) {
   const [profiles, setProfiles] = useState<UserProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export function useCompletedProfiles(enabled = true) {
     setError(null);
 
     try {
-      const result = await listCompletedProfilesAction();
+      const result = await listCompletedProfilesAction(limit);
       if (result.error) {
         setError(result.error);
         setProfiles([]);
@@ -30,7 +30,7 @@ export function useCompletedProfiles(enabled = true) {
     } finally {
       setIsLoading(false);
     }
-  }, [enabled]);
+  }, [enabled, limit]);
 
   useEffect(() => {
     void loadProfiles();

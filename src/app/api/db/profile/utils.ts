@@ -315,13 +315,15 @@ export async function saveCompletedProfile(firebaseUid: string, input: any) {
   }
 }
 
-export async function listCompletedProfiles(): Promise<UserProfile[]> {
+export async function listCompletedProfiles({ limit, skip }: { limit?: number, skip?: number } = {}): Promise<UserProfile[]> {
   const users = await prisma.user.findMany({
     where: {
       profile: {
         profileCompleted: true
       }
     },
+    take: limit,
+    skip: skip,
     select: {
       id: true,
       firebaseUid: true,
