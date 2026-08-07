@@ -83,6 +83,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Cannot start conversation with yourself" }, { status: 400 });
     }
 
+    // Verify connection status
+    const connection = await prisma.matchRequest.findFirst({
+      where: {
+        OR: [
+          { senderId: user!.id, receiverId: targetUserId },
+          { senderId: targetUserId, receiverId: user!.id }
+        ]
+      }
+    });
+
+    if (!connection || connection.status !== "accepted") {
+      return NextResponse.json(
+        { success: false, error: "You must be connected before starting a conversation." },
+        { status: 403 }
+      );
+    }
+
     // Check if conversation already exists between these two users
     const existingConversation = await prisma.conversation.findFirst({
       where: {

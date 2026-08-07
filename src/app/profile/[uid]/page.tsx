@@ -10,7 +10,8 @@ import { ProfileCard } from "@/features/profiles/components/ProfileCard";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useProfileById } from "@/features/profiles/hooks/useProfileById";
 import { useProfileRedirect } from "@/features/profiles/hooks/useProfileStatus";
-import { ExternalLink, MessageCircle } from "lucide-react";
+import { useConnectionStatus } from "@/features/profiles/hooks/useConnectionStatus";
+import { ExternalLink, MessageCircle, UserPlus, Clock, Check, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { fetchWithAuth } from "@/lib/api-client";
 import { useState } from "react";
@@ -32,6 +33,14 @@ export default function ProfileDetailPage() {
     params.uid,
     Boolean(user) && !authLoading
   );
+
+  const {
+    status: connectionStatus,
+    conversationId,
+    sendRequest,
+    acceptRequest,
+    rejectRequest,
+  } = useConnectionStatus(profile?.uid);
 
   const isBusy = authLoading || isCheckingProfile || profileCompleted !== true || isLoading;
 
@@ -77,11 +86,49 @@ export default function ProfileDetailPage() {
             </div>
             
             {user?.uid !== profile.firebaseUID && (
-              <div className="flex justify-end mt-4">
-                <Button onClick={handleStartChat} disabled={startingChat}>
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  {startingChat ? "Starting chat..." : "Message"}
-                </Button>
+              <div className="flex justify-end mt-4 gap-2">
+                {connectionStatus === "LOADING" && (
+                  <Button disabled>
+                    <Spinner size="sm" className="mr-2" />
+                    Loading...
+                  </Button>
+                )}
+                {connectionStatus === "NOT_CONNECTED" && (
+                  <Button onClick={sendRequest} className="bg-blue-600 hover:bg-blue-700 text-white">
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Connect
+                  </Button>
+                )}
+                {connectionStatus === "PENDING_SENT" && (
+                  <Button disabled className="bg-yellow-500 text-white opacity-70">
+                    <Clock className="w-4 h-4 mr-2" />
+                    Request Sent
+                  </Button>
+                )}
+                {connectionStatus === "PENDING_RECEIVED" && (
+                  <>
+                    <Button onClick={acceptRequest} className="bg-green-600 hover:bg-green-700 text-white">
+                      <Check className="w-4 h-4 mr-2" />
+                      Accept
+                    </Button>
+                    <Button onClick={rejectRequest} variant="destructive">
+                      <X className="w-4 h-4 mr-2" />
+                      Reject
+                    </Button>
+                  </>
+                )}
+                {connectionStatus === "ACCEPTED" && conversationId && (
+                  <Button onClick={() => router.push(`/chat/${conversationId}`)}>
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Open Chat
+                  </Button>
+                )}
+                {connectionStatus === "ACCEPTED" && !conversationId && (
+                  <Button onClick={handleStartChat} disabled={startingChat}>
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    {startingChat ? "Starting chat..." : "Message"}
+                  </Button>
+                )}
               </div>
             )}
           </div>

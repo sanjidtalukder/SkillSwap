@@ -67,3 +67,69 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const { user } = await verifyAuth(request);
+    const userId = user!.id;
+    
+    const { targetUserId, action } = await request.json();
+
+    if (!targetUserId || !action) {
+      return NextResponse.json({ error: "Missing targetUserId or action" }, { status: 400 });
+    }
+
+    if (action !== "accept" && action !== "reject") {
+      return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+    }
+
+    // We can only accept/reject if we are the receiver
+    const existing = await prisma.matchRequest.findUnique({
+      where: {
+        senderId_receiverId: {
+          senderId: targetUserId,
+          receiverId: userId,
+        },
+      },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: "Connection request not found" }, { status: 404 });
+    }
+
+    if (existing.status !== "pending") {
+      return NextResponse.json({ error: "Connection request is not pending" }, { status: 400 });
+    }
+
+    const newStatus = action === "accept" ? "accepted" : "rejected";
+
+    await prisma.matchRequest.update({
+      where: { id: existing.id },
+      data: { status: newStatus }
+    });
+
+    // Create notification if accepted
+    if (newStatus === "accepted") {
+      const profile = await prisma.profile.findUnique({ where: { userId } });
+      const acceptorName = profile?.fullName || "A student";
+
+      await prisma.notification.create({
+        data: {
+          recipientId: targetUserId,
+          senderId: userId,
+          type: "connection_accepted",
+          title: "Connection accepted",
+          body: `${acceptorName} accepted your connection request.`,
+          linkUrl: `/profile/${userId}`,
+        },
+      });
+    }
+
+    return NextResponse.json({ status: newStatus });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: error instanceof Error && error.message === "Unauthorized" ? 401 : 500 }
+    );
+  }
+}
