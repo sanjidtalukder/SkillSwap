@@ -82,7 +82,10 @@ export function DiscussionTab({ project, user }: { project: any, user: any }) {
       const data = await response.json();
       
       if (data.success) {
-        setMessages(prev => [...prev, data.data]);
+        setMessages(prev => {
+          if (prev.some(m => m.id === data.data.id)) return prev;
+          return [...prev, data.data];
+        });
         scrollToBottom();
       }
     } catch (err) {

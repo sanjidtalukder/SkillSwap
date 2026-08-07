@@ -57,8 +57,9 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: messages });
   } catch (error) {
+    console.error("GET messages error:", error);
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : "Unknown error" },
+      { success: false, error: error instanceof Error ? error.message : "Unknown error", stack: error instanceof Error ? error.stack : undefined },
       { status: error instanceof Error && error.message === "Unauthorized" ? 401 : 500 }
     );
   }
