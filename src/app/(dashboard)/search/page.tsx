@@ -22,8 +22,6 @@ export default function SearchPage() {
     redirectWhenIncomplete: true,
   });
   const {
-    notice: connectNotice,
-    error: connectError,
     pendingRecipientId,
     sendConnectionRequest,
   } = useConnectionRequest(user);
@@ -69,10 +67,9 @@ export default function SearchPage() {
           isLoading={isLoading}
         />
 
-        {(profileError || error || connectError) && (
-          <Alert variant="error">{profileError || error || connectError}</Alert>
+        {(profileError || error) && (
+          <Alert variant="error">{profileError || error}</Alert>
         )}
-        {connectNotice && <Alert variant="success">{connectNotice}</Alert>}
 
         {authLoading || isCheckingProfile || profileCompleted !== true || isLoading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
