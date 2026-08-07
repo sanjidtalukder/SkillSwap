@@ -3,6 +3,8 @@ import prisma from "@/lib/prisma.server";
 import { verifyAuth } from "@/utils/auth";
 import { Prisma } from "@prisma/client";
 
+export const revalidate = 60; // Cache for 60 seconds
+
 export async function GET(request: Request) {
   try {
     const searchParams = new URL(request.url).searchParams;

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma.server";
 import { ExperienceLevel, Availability } from "@/features/profiles/types/profile";
 
+export const revalidate = 60; // Cache for 60 seconds
+
 export async function GET(request: Request) {
   try {
     const searchParams = new URL(request.url).searchParams;

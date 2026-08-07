@@ -143,8 +143,16 @@ export async function getProfileByUsername(username: string): Promise<(UserProfi
           skillsNeed: { include: { skill: true } },
           keywords: true,
           ownedProjects: {
-            include: {
-              members: { include: { user: { include: { profile: true } } } }
+            select: {
+              id: true,
+              title: true,
+              status: true,
+              description: true,
+              technologies: true,
+              createdAt: true,
+              members: {
+                select: { id: true }
+              }
             },
             orderBy: { createdAt: "desc" }
           }
@@ -249,46 +257,56 @@ export async function saveCompletedProfile(firebaseUid: string, input: any) {
     }
   });
 
-  // Update skills (have)
+  // 1. Bulk ensure all skills exist
+  const allSkillNames = Array.from(new Set([...skillsHave, ...skillsNeed]));
+  
+  // This loop is fine if we use upsert, but we can parallelize it:
+  await Promise.all(
+    allSkillNames.map(skillName => 
+      prisma.skill.upsert({
+        where: { name: skillName },
+        create: { name: skillName },
+        update: {}
+      })
+    )
+  );
+
+  // Get the IDs of the newly ensured skills
+  const dbSkills = await prisma.skill.findMany({
+    where: { name: { in: allSkillNames } },
+    select: { id: true, name: true }
+  });
+
+  const skillNameToId = new Map(dbSkills.map(s => [s.name, s.id]));
+
+  // 2. Bulk insert UserSkill (skillsHave)
   await prisma.userSkill.deleteMany({
     where: { userId: dbUser.id }
   });
 
-  for (const skillName of skillsHave) {
-    // Find or create skill
-    const skill = await prisma.skill.upsert({
-      where: { name: skillName },
-      create: { name: skillName },
-      update: {}
-    });
-
-    await prisma.userSkill.create({
-      data: {
+  if (skillsHave.length > 0) {
+    await prisma.userSkill.createMany({
+      data: skillsHave.map(skillName => ({
         userId: dbUser.id,
-        skillId: skill.id,
-        level: "Intermediate" // Default level
-      }
+        skillId: skillNameToId.get(skillName)!,
+        level: "Intermediate"
+      })),
+      skipDuplicates: true
     });
   }
 
-  // Update skills (need)
+  // 3. Bulk insert UserSkillNeed (skillsNeed)
   await prisma.userSkillNeed.deleteMany({
     where: { userId: dbUser.id }
   });
 
-  for (const skillName of skillsNeed) {
-    // Find or create skill
-    const skill = await prisma.skill.upsert({
-      where: { name: skillName },
-      create: { name: skillName },
-      update: {}
-    });
-
-    await prisma.userSkillNeed.create({
-      data: {
+  if (skillsNeed.length > 0) {
+    await prisma.userSkillNeed.createMany({
+      data: skillsNeed.map(skillName => ({
         userId: dbUser.id,
-        skillId: skill.id
-      }
+        skillId: skillNameToId.get(skillName)!
+      })),
+      skipDuplicates: true
     });
   }
 

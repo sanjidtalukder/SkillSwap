@@ -18,78 +18,81 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // 1. Total Skills
-    const totalSkills = await prisma.userSkill.count({
-      where: { userId: dbUser.id }
-    });
+    // Run all independent queries concurrently
+    const [
+      totalSkills,
+      activeProjects,
+      connections,
+      pendingMatchRequests,
+      pendingProjectRequests,
+      latestProjects,
+      latestConnections,
+      latestNotifications
+    ] = await Promise.all([
+      prisma.userSkill.count({ where: { userId: dbUser.id } }),
+      
+      prisma.project.count({
+        where: {
+          status: "active",
+          OR: [
+            { ownerId: dbUser.id },
+            { members: { some: { userId: dbUser.id } } }
+          ]
+        }
+      }),
 
-    // 2. Active Projects (Owned or Joined)
-    const activeProjects = await prisma.project.count({
-      where: {
-        status: "active",
-        OR: [
-          { ownerId: dbUser.id },
-          { members: { some: { userId: dbUser.id } } }
-        ]
-      }
-    });
+      prisma.matchRequest.count({
+        where: {
+          status: "accepted",
+          OR: [
+            { senderId: dbUser.id },
+            { receiverId: dbUser.id }
+          ]
+        }
+      }),
 
-    // 3. Connections (Accepted MatchRequests)
-    const connections = await prisma.matchRequest.count({
-      where: {
-        status: "accepted",
-        OR: [
-          { senderId: dbUser.id },
-          { receiverId: dbUser.id }
-        ]
-      }
-    });
+      prisma.matchRequest.count({
+        where: { receiverId: dbUser.id, status: "pending" }
+      }),
 
-    // 4. Pending Requests (MatchRequests received pending + ProjectJoinRequests received pending)
-    const pendingMatchRequests = await prisma.matchRequest.count({
-      where: { receiverId: dbUser.id, status: "pending" }
-    });
-    
-    const pendingProjectRequests = await prisma.projectJoinRequest.count({
-      where: { project: { ownerId: dbUser.id }, status: "pending" }
-    });
-    
+      prisma.projectJoinRequest.count({
+        where: { project: { ownerId: dbUser.id }, status: "pending" }
+      }),
+
+      prisma.project.findMany({
+        where: { status: "active", ownerId: { not: dbUser.id } },
+        include: {
+          owner: { include: { profile: true } },
+          _count: { select: { members: true } }
+        },
+        orderBy: { createdAt: "desc" },
+        take: 3
+      }),
+
+      prisma.matchRequest.findMany({
+        where: {
+          status: "accepted",
+          OR: [
+            { senderId: dbUser.id },
+            { receiverId: dbUser.id }
+          ]
+        },
+        include: {
+          sender: { include: { profile: true } },
+          receiver: { include: { profile: true } }
+        },
+        orderBy: { updatedAt: "desc" },
+        take: 3
+      }),
+
+      prisma.notification.findMany({
+        where: { recipientId: dbUser.id },
+        orderBy: { createdAt: "desc" },
+        take: 3
+      })
+    ]);
+
     const pendingRequests = pendingMatchRequests + pendingProjectRequests;
-
-    // 5. Recent Activity: Latest Projects (Global discovery)
-    const latestProjects = await prisma.project.findMany({
-      where: { status: "active", ownerId: { not: dbUser.id } },
-      include: {
-        owner: { include: { profile: true } },
-        _count: { select: { members: true } }
-      },
-      orderBy: { createdAt: "desc" },
-      take: 3
-    });
-
-    // 6. Recent Activity: Latest Connections
-    const latestConnections = await prisma.matchRequest.findMany({
-      where: {
-        status: "accepted",
-        OR: [
-          { senderId: dbUser.id },
-          { receiverId: dbUser.id }
-        ]
-      },
-      include: {
-        sender: { include: { profile: true } },
-        receiver: { include: { profile: true } }
-      },
-      orderBy: { updatedAt: "desc" },
-      take: 3
-    });
-
-    // 7. Recent Activity: Latest Notifications
-    const latestNotifications = await prisma.notification.findMany({
-      where: { recipientId: dbUser.id },
-      orderBy: { createdAt: "desc" },
-      take: 3
-    });
 
     return NextResponse.json({
       success: true,

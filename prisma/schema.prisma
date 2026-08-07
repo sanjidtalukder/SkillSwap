@@ -60,6 +60,8 @@ model Profile {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @default(now()) @updatedAt
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([updatedAt])
 }
 
 model SearchKeyword {
@@ -124,6 +126,11 @@ model Project {
   tasks          ProjectTask[]
   files          ProjectFile[]
   announcements  ProjectAnnouncement[]
+
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+  @@index([ownerId])
 }
 
 model ProjectMember {
@@ -148,6 +155,8 @@ model ProjectJoinRequest {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
 }
 
 model MatchRequest {
@@ -203,6 +212,9 @@ model Message {
   sender         User          @relation(fields: [senderId], references: [id], onDelete: Cascade)
   messageReads   MessageRead[]
   reactions      MessageReaction[]
+
+  @@index([conversationId])
+  @@index([createdAt])
 }
 
 model MessageRead {
@@ -240,6 +252,9 @@ model Notification {
   createdAt   DateTime @default(now())
   recipient   User     @relation("RecipientNotifications", fields: [recipientId], references: [id], onDelete: Cascade)
   sender      User?    @relation("SenderNotifications", fields: [senderId], references: [id])
+
+  @@index([recipientId])
+  @@index([createdAt])
 }
 
 model UserSkill {
