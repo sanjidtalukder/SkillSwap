@@ -1,6 +1,7 @@
-<div align="center">
-  <img src="https://ibb.co.com/DPPN9qGK" alt="SkillSwap Logo" width="120" />
 
+<div align="center">
+
+<img width="400" height="400"  width="120" alt="Skill Swap" src="https://github.com/user-attachments/assets/786525d4-0431-4789-bbe0-ac3108c9afc0" />
   <h1 align="center">SkillSwap</h1>
   <p align="center">
     <strong>A modern, collaborative platform for students and professionals to exchange skills and build projects together.</strong>
