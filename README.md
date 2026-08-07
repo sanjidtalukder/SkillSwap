@@ -6,17 +6,6 @@
     <strong>A modern, collaborative platform for students and professionals to exchange skills and build projects together.</strong>
   </p>
 
-  <p align="center">
-    <a href="https://github.com/yourusername/skillswap/stargazers"><img src="https://img.shields.io/github/stars/yourusername/skillswap?style=for-the-badge&color=yellow" alt="Stars" /></a>
-    <a href="https://github.com/yourusername/skillswap/network/members"><img src="https://img.shields.io/github/forks/yourusername/skillswap?style=for-the-badge&color=blue" alt="Forks" /></a>
-    <a href="https://github.com/yourusername/skillswap/issues"><img src="https://img.shields.io/github/issues/yourusername/skillswap?style=for-the-badge&color=red" alt="Issues" /></a>
-    <a href="https://github.com/yourusername/skillswap/blob/main/LICENSE"><img src="https://img.shields.io/github/license/yourusername/skillswap?style=for-the-badge&color=green" alt="License" /></a>
-    <br />
-    <img src="https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js" alt="Next.js" />
-    <img src="https://img.shields.io/badge/TypeScript-Ready-blue?style=flat-square&logo=typescript" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/Prisma-ORM-1B222D?style=flat-square&logo=prisma" alt="Prisma" />
-    <img src="https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css" alt="Tailwind" />
-  </p>
 </div>
 
 ---
@@ -319,9 +308,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <p align="center">
   Made with ❤️ by the <strong>SkillSwap Team</strong><br><br>
 
-  👨‍💻 <strong>Sanjid Talukder</strong> — Full Stack Development, System Architecture, Database Design, UI/UX Implementation, Backend APIs, Workspace, Messaging, Testing & Deployment Lead.<br>
-
   🧪 <strong>Adib Al Zawan</strong> — Project Review, Testing, Quality Assurance & Feature Validation.<br>
+
+  👨‍💻 <strong>Sanjid Talukder</strong> — Full Stack Development, System Architecture, Database Design, UI/UX Implementation, Backend APIs, Workspace, Messaging, Testing & Deployment Lead.<br>
 
   🧪 <strong>Mizan</strong> — Project Review, Testing, Bug Verification & Feedback.
 </p>
