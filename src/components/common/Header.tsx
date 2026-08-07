@@ -4,6 +4,7 @@ import React, { memo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { NavLink } from "@/components/common/NavLink";
 import { ROUTES, SITE_CONFIG } from "@/constants";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -37,62 +38,59 @@ export const Header = memo(function Header() {
         <nav
           role="navigation"
           aria-label="Primary Navigation"
-          className="flex min-w-0 flex-1 items-center justify-end gap-3 overflow-x-auto whitespace-nowrap text-xs font-medium sm:gap-6 sm:text-sm"
+          className="flex min-w-0 flex-1 items-center justify-end gap-1 overflow-x-auto whitespace-nowrap text-xs sm:gap-2 sm:text-sm"
         >
-          <Link
+          <NavLink
             href={ROUTES.PROJECTS}
-            aria-label="Browse Projects"
-            className="text-foreground/60 transition-colors hover:text-foreground/80"
+            ariaLabel="Browse Projects"
           >
             Projects
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             href={ROUTES.SKILLS}
-            aria-label="Browse Skills"
-            className="text-foreground/60 transition-colors hover:text-foreground/80"
+            ariaLabel="Browse Skills"
           >
             Skills
-          </Link>
+          </NavLink>
           {loading ? null : isAuthenticated ? (
             <>
-              <Link
+              <NavLink
                 href={ROUTES.DASHBOARD}
-                aria-label="Open Skill Feed"
-                className="text-foreground/60 transition-colors hover:text-foreground/80"
+                ariaLabel="Open Dashboard"
               >
-                Feed
-              </Link>
-              <span className="hidden max-w-40 truncate text-foreground/60 sm:inline">
-                {user?.displayName || user?.email}
-              </span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                aria-label="Logout from SkillSwap"
-                className="text-foreground/70"
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
+                Dashboard
+              </NavLink>
+              <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border/40">
+                <span className="hidden max-w-40 truncate text-foreground/60 sm:inline">
+                  {user?.displayName || user?.email}
+                </span>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  aria-label="Logout from SkillSwap"
+                  className="text-foreground/70"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              </div>
             </>
           ) : (
             <>
-              <Link
+              <NavLink
                 href={ROUTES.REGISTER}
-                aria-label="Create a SkillSwap account"
-                className="text-foreground/60 transition-colors hover:text-foreground/80"
+                ariaLabel="Create a SkillSwap account"
               >
                 Register
-              </Link>
-              <Link
+              </NavLink>
+              <NavLink
                 href={ROUTES.LOGIN}
-                aria-label="Login to SkillSwap"
-                className="text-foreground/60 transition-colors hover:text-foreground/80"
+                ariaLabel="Login to SkillSwap"
               >
                 Login
-              </Link>
+              </NavLink>
             </>
           )}
         </nav>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { LogIn, Mail, Lock, User, UserPlus } from "lucide-react";
 import { Alert } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { ROUTES } from "@/constants";
 import { loginSchema, registerSchema } from "@/features/auth/schemas/authSchema";
@@ -162,33 +163,23 @@ export function AuthForm({ mode = "login" }: AuthFormProps) {
 
           <label className="block space-y-2">
             <span className="text-sm font-medium text-foreground/80">Password</span>
-            <div className="relative">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="password"
-                value={form.password}
-                onChange={(event) => updateField("password", event.target.value)}
-                autoComplete={isRegister ? "new-password" : "current-password"}
-                className="h-11 w-full rounded-lg border border-input bg-background/70 pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/30"
-                placeholder="At least 6 characters"
-              />
-            </div>
+            <PasswordInput
+              value={form.password}
+              onChange={(event) => updateField("password", event.target.value)}
+              autoComplete={isRegister ? "new-password" : "current-password"}
+              placeholder="At least 6 characters"
+            />
           </label>
 
           {isRegister && (
             <label className="block space-y-2">
               <span className="text-sm font-medium text-foreground/80">Confirm password</span>
-              <div className="relative">
-                <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  type="password"
-                  value={form.confirmPassword}
-                  onChange={(event) => updateField("confirmPassword", event.target.value)}
-                  autoComplete="new-password"
-                  className="h-11 w-full rounded-lg border border-input bg-background/70 pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/30"
-                  placeholder="Repeat password"
-                />
-              </div>
+              <PasswordInput
+                value={form.confirmPassword}
+                onChange={(event) => updateField("confirmPassword", event.target.value)}
+                autoComplete="new-password"
+                placeholder="Repeat password"
+              />
             </label>
           )}
 
