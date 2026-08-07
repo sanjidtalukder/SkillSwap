@@ -92,9 +92,9 @@ export default function ProjectDetailsPage() {
       
       
       setProject((prev: any) => ({ ...prev, joinRequestStatus: "pending" }));
-      toast.success("Join request sent successfully!");
+      toast.success("Workspace join request sent successfully!");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error joining project");
+      toast.error(err instanceof Error ? err.message : "Error requesting workspace access");
     } finally {
       setIsJoining(false);
     }
@@ -181,7 +181,7 @@ export default function ProjectDetailsPage() {
                 disabled={project.status !== "active"}
                 className="w-full"
               >
-                Join Again
+                Request Workspace Access
               </Button>
             ) : (
               <Button 
@@ -190,7 +190,7 @@ export default function ProjectDetailsPage() {
                 disabled={project.status !== "active"}
                 className="w-full"
               >
-                Join Project
+                Join Workspace
               </Button>
             )}
           </div>
@@ -243,13 +243,6 @@ export default function ProjectDetailsPage() {
               )}
             </section>
 
-            {/* Comments Placeholder */}
-            <section className="space-y-4 pt-6 border-t border-border/40">
-              <h2 className="text-xl font-semibold">Discussion (Coming Soon)</h2>
-              <div className="rounded-lg border border-border/40 bg-muted/20 p-6 text-center">
-                <p className="text-sm text-muted-foreground">Comments section will be available in the next update.</p>
-              </div>
-            </section>
           </div>
 
           {/* Sidebar */}

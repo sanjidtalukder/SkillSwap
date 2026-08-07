@@ -24,6 +24,10 @@ interface Conversation {
     senderId: string;
   } | null;
   updatedAt: string;
+  project: {
+    id: string;
+    title: string;
+  } | null;
 }
 
 export default function ChatSidebar() {
@@ -74,43 +78,74 @@ export default function ChatSidebar() {
       <div className="p-4 border-b border-border">
         <h2 className="text-xl font-bold">Messages</h2>
       </div>
-      <div className="flex-1 overflow-y-auto">
-        {conversations.length === 0 ? (
-          <div className="p-4 text-center text-muted-foreground mt-10">
-            No conversations yet.
-          </div>
-        ) : (
-          conversations.map((conv) => {
-            const isActive = pathname === `/chat/${conv.id}`;
-            return (
-              <Link
-                key={conv.id}
-                href={`/chat/${conv.id}`}
-                className={`flex items-start gap-3 p-4 border-b border-border hover:bg-muted/50 transition-colors ${isActive ? "bg-muted" : ""}`}
-              >
-                <Avatar src={conv.otherUser.photo} alt={conv.otherUser.name} size="md" className="flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-baseline mb-1">
-                    <h3 className={`font-semibold truncate ${conv.hasUnread && !isActive ? "text-primary" : ""}`}>
-                      {conv.otherUser.name}
-                    </h3>
-                    <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
-                      {formatDistanceToNow(new Date(conv.updatedAt), { addSuffix: true })}
-                    </span>
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {/* Direct Messages Section */}
+        <div className="p-3">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-1">Direct Messages</h3>
+          {conversations.filter(c => !c.project).length === 0 ? (
+            <div className="text-sm text-muted-foreground px-1 mb-4">No direct messages.</div>
+          ) : (
+            <div className="space-y-1 mb-4">
+              {conversations.filter(c => !c.project).map((conv) => {
+                const isActive = pathname === `/chat/${conv.id}`;
+                return (
+                  <Link
+                    key={conv.id}
+                    href={`/chat/${conv.id}`}
+                    className={`flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors ${isActive ? "bg-muted" : ""}`}
+                  >
+                    <Avatar src={conv.otherUser.photo} alt={conv.otherUser.name} size="sm" className="flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-baseline mb-0.5">
+                        <h3 className={`text-sm font-medium truncate ${conv.hasUnread && !isActive ? "text-primary font-semibold" : ""}`}>
+                          {conv.otherUser.name}
+                        </h3>
+                      </div>
+                      <p className={`text-xs truncate ${conv.hasUnread && !isActive ? "font-bold text-foreground" : "text-muted-foreground"}`}>
+                        {conv.latestMessage?.isDeleted 
+                          ? "This message was deleted" 
+                          : conv.latestMessage?.message || "No messages yet"}
+                      </p>
+                    </div>
+                    {conv.hasUnread && !isActive && (
+                      <div className="w-2 h-2 bg-primary rounded-full mt-1.5 flex-shrink-0" />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+        
+        {/* Project Workspaces Section */}
+        <div className="p-3 border-t border-border/40">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 px-1">Project Workspaces</h3>
+          {conversations.filter(c => c.project).length === 0 ? (
+            <div className="text-sm text-muted-foreground px-1">No project workspaces.</div>
+          ) : (
+            <div className="space-y-1">
+              {conversations.filter(c => c.project).map((conv) => (
+                <Link
+                  key={conv.id}
+                  href={`/workspace/${conv.project!.id}`}
+                  className={`flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors`}
+                >
+                  <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center flex-shrink-0 text-primary font-bold text-sm">
+                    {conv.project!.title.charAt(0)}
                   </div>
-                  <p className={`text-sm truncate ${conv.hasUnread && !isActive ? "font-bold text-foreground" : "text-muted-foreground"}`}>
-                    {conv.latestMessage?.isDeleted 
-                      ? "This message was deleted" 
-                      : conv.latestMessage?.message || "No messages yet"}
-                  </p>
-                </div>
-                {conv.hasUnread && !isActive && (
-                  <div className="w-2.5 h-2.5 bg-primary rounded-full mt-2 flex-shrink-0" />
-                )}
-              </Link>
-            );
-          })
-        )}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium truncate">
+                      {conv.project!.title}
+                    </h3>
+                  </div>
+                  {conv.hasUnread && (
+                    <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0" />
+                  )}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

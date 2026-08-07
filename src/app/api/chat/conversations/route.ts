@@ -30,6 +30,12 @@ export async function GET(request: NextRequest) {
         messages: {
           orderBy: { createdAt: "desc" },
           take: 1
+        },
+        project: {
+          select: {
+            id: true,
+            title: true
+          }
         }
       },
       orderBy: { updatedAt: "desc" }
@@ -56,7 +62,11 @@ export async function GET(request: NextRequest) {
           isDeleted: latestMessage.isDeleted,
           senderId: latestMessage.senderId
         } : null,
-        updatedAt: c.updatedAt
+        updatedAt: c.updatedAt,
+        project: c.project ? {
+          id: c.project.id,
+          title: c.project.title
+        } : null
       };
     });
 

@@ -62,6 +62,9 @@ export const Header = memo(function Header() {
             
             {loading ? null : isAuthenticated ? (
               <>
+                <NavLink href="/chat" ariaLabel="Open Messages">
+                  Messages
+                </NavLink>
                 <NavLink href={ROUTES.DASHBOARD} ariaLabel="Open Dashboard">
                   Dashboard
                 </NavLink>

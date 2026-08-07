@@ -40,6 +40,16 @@ export async function GET(
             firebaseUid: true,
             profile: { select: { fullName: true, photo: true } }
           }
+        },
+        // @ts-ignore
+        reactions: {
+          include: {
+            user: {
+              select: {
+                profile: { select: { fullName: true } }
+              }
+            }
+          }
         }
       },
       orderBy: { createdAt: "asc" }
@@ -63,7 +73,7 @@ export async function POST(
   try {
     const { user } = await verifyAuth(request);
     const body = await request.json();
-    const { message } = body;
+    const { message, attachmentUrl, type } = body;
 
     if (!message || message.trim() === "") {
       return NextResponse.json({ success: false, error: "Message cannot be empty" }, { status: 400 });
@@ -88,7 +98,9 @@ export async function POST(
       data: {
         conversationId,
         senderId: user!.id,
-        message: message.trim()
+        message: message.trim(),
+        attachmentUrl: attachmentUrl || null,
+        type: type || "text"
       },
       include: {
         sender: {
@@ -124,15 +136,27 @@ export async function POST(
     });
 
     if (otherParticipants.length > 0) {
+      // Check if it's a project conversation to determine correct notification URL
+      const conversation = await prisma.conversation.findUnique({
+        where: { id: conversationId },
+        include: { project: true }
+      });
+      
+      const linkUrl = conversation?.project 
+        ? `/workspace/${conversation.project.id}` 
+        : `/chat/${conversationId}`;
+
       const senderName = newMessage.sender.profile?.fullName || "A user";
+      const notifTitle = conversation?.project ? `New message in ${conversation.project.title}` : `New message received`;
+      
       await prisma.notification.createMany({
         data: otherParticipants.map(p => ({
           recipientId: p.userId,
           senderId: user!.id,
           type: "message",
-          title: "New message received",
-          body: `${senderName} sent you a message`,
-          linkUrl: `/chat/${conversationId}`
+          title: notifTitle,
+          body: `${senderName}: ${message.substring(0, 30)}${message.length > 30 ? '...' : ''}`,
+          linkUrl: linkUrl
         }))
       });
     }
