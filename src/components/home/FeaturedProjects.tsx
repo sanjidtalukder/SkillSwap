@@ -47,20 +47,22 @@ export function FeaturedProjects({ projects }: FeaturedProjectsProps) {
   };
 
   return (
-    <section className="py-20 bg-background relative z-10">
+    <section className="py-24 bg-gradient-to-b from-background to-muted/20 relative z-10 border-t border-border/40">
       <div className="container mx-auto max-w-6xl px-4">
         
-        <div className="mb-12 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <Badge variant="primary" className="mb-3 px-3 py-1">Featured Projects</Badge>
-            <h2 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Top Projects Hiring Now</h2>
-            <p className="mt-3 text-muted-foreground max-w-2xl text-lg">
-              Join active projects to collaborate with skilled peers and build your portfolio.
+        <div className="mb-16 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="max-w-2xl">
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+              Explore <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">active projects</span>
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Join teams building real-world applications. Enhance your resume, learn new tech, and collaborate globally.
             </p>
           </div>
-          <Link href="/projects">
-            <Button variant="outline" className="hidden md:flex bg-background/50 backdrop-blur-sm border-border/80">
-              View All Projects
+          <Link href="/projects" className="shrink-0">
+            <Button variant="outline" className="hidden md:flex bg-background/50 backdrop-blur-sm border-border/80 group">
+              View all projects
+              <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
             </Button>
           </Link>
         </div>
