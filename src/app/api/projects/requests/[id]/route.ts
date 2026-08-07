@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma.server";
 import { verifyAuth } from "@/utils/auth";
+import { logProjectActivity } from "@/features/projects/services/activityService";
 
 export async function PATCH(
   request: NextRequest,
@@ -43,6 +44,41 @@ export async function PATCH(
         }
       });
 
+      // Ensure Project has a Conversation
+      let conversationId = joinRequest.project.conversationId;
+      if (!conversationId) {
+        const newConv = await prisma.conversation.create({
+          data: {
+            participants: {
+              create: [
+                { userId: joinRequest.project.ownerId } // Add owner
+              ]
+            }
+          }
+        });
+        conversationId = newConv.id;
+        await prisma.project.update({
+          where: { id: joinRequest.projectId },
+          data: { conversationId }
+        });
+      }
+
+      // Add applicant to Conversation
+      await prisma.conversationParticipant.create({
+        data: {
+          conversationId,
+          userId: joinRequest.userId,
+        }
+      });
+
+      // Log Activity
+      await logProjectActivity({
+        projectId: joinRequest.projectId,
+        type: "MEMBER_JOINED",
+        content: `${joinRequest.user.profile?.fullName || "A user"} joined the project.`,
+        actorId: joinRequest.userId,
+      });
+
       // Update Request
       await prisma.projectJoinRequest.update({
         where: { id },
@@ -57,7 +93,7 @@ export async function PATCH(
           type: "project_joined",
           title: "Request Accepted",
           body: `Your request to join "${joinRequest.project.title}" has been accepted.`,
-          linkUrl: `/projects/${joinRequest.projectId}`
+          linkUrl: `/projects/${joinRequest.projectId}/workspace`
         }
       });
 

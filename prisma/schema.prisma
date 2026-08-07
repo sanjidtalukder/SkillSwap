@@ -91,6 +91,9 @@ model Project {
   owner          User                 @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
   members        ProjectMember[]
   joinRequests   ProjectJoinRequest[]
+  activities     ProjectActivity[]
+  conversationId String?              @unique
+  conversation   Conversation?        @relation(fields: [conversationId], references: [id], onDelete: SetNull)
 }
 
 model ProjectMember {
@@ -136,6 +139,7 @@ model Conversation {
   updatedAt    DateTime                  @default(now()) @updatedAt
   messages     Message[]
   participants ConversationParticipant[]
+  project      Project?
 }
 
 model ConversationParticipant {
@@ -211,4 +215,12 @@ model UserSkillNeed {
   @@unique([userId, skillId])
 }
 
-
+model ProjectActivity {
+  id        String   @id @default(cuid())
+  projectId String
+  type      String   // e.g. "MEMBER_JOINED", "MEMBER_LEFT", "PROJECT_UPDATED", "DEADLINE_CHANGED"
+  content   String   // The text describing the activity
+  actorId   String?  // Optional ID of the user who performed the action
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}

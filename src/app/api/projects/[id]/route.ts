@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma.server";
 import { verifyAuth } from "@/utils/auth";
+import { logProjectActivity } from "@/features/projects/services/activityService";
 
 export async function GET(
   request: NextRequest,
@@ -133,6 +134,18 @@ export async function PATCH(
     const updatedProject = await prisma.project.update({
       where: { id },
       data: body,
+    });
+
+    let content = "Project details were updated.";
+    if (body.deadline && (!project.deadline || new Date(body.deadline).getTime() !== project.deadline.getTime())) {
+      content = "Project deadline was changed.";
+    }
+
+    await logProjectActivity({
+      projectId: id,
+      type: "PROJECT_UPDATED",
+      content,
+      actorId: user!.id,
     });
 
     return NextResponse.json({ success: true, data: updatedProject });

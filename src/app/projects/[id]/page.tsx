@@ -168,7 +168,9 @@ export default function ProjectDetailsPage() {
                 <Button variant="destructive" className="w-full" onClick={handleDelete}>Delete Project</Button>
               </>
             ) : isMember || project.joinRequestStatus === "accepted" ? (
-              <Button className="w-full" onClick={() => toast.info("Workspace feature coming soon!")}>Open Workspace</Button>
+              <Link href={`/projects/${project.id}/workspace`}>
+                <Button className="w-full">Open Workspace</Button>
+              </Link>
             ) : project.joinRequestStatus === "pending" ? (
               <Button disabled variant="outline" className="w-full">Request Sent</Button>
             ) : project.joinRequestStatus === "rejected" ? (
