@@ -53,6 +53,9 @@ export const Header = memo(function Header() {
             aria-label="Primary Desktop Navigation"
             className="hidden md:flex flex-1 items-center justify-end h-full gap-2"
           >
+            <NavLink href={ROUTES.HOME} ariaLabel="Go to Home">
+              Home
+            </NavLink>
             <NavLink href={ROUTES.PROJECTS} ariaLabel="Browse Projects">
               Projects
             </NavLink>

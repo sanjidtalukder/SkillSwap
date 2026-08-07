@@ -1,127 +1,132 @@
-import Link from "next/link";
+import { Metadata } from "next";
 import { Header } from "@/components/common/Header";
 import { Footer } from "@/components/common/Footer";
-import { Button } from "@/components/ui/Button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { ROUTES } from "@/constants";
+import prisma from "@/lib/prisma";
+import { HeroSection } from "@/components/home/HeroSection";
+import { StatsSection } from "@/components/home/StatsSection";
+import { FeaturedProjects } from "@/components/home/FeaturedProjects";
+import { TopMembers } from "@/components/home/TopMembers";
+import { TrendingSkills } from "@/components/home/TrendingSkills";
+import { HowItWorks } from "@/components/home/HowItWorks";
+import { FeaturesSection } from "@/components/home/FeaturesSection";
+import { RecentActivity } from "@/components/home/RecentActivity";
+import { CTASection } from "@/components/home/CTASection";
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: "SkillSwap | Swap Skills, Build Projects, Grow Together",
+  description: "The premium student collaboration platform for swapping skills and building real-world projects.",
+  openGraph: {
+    title: "SkillSwap | Swap Skills, Build Projects, Grow Together",
+    description: "The premium student collaboration platform for swapping skills and building real-world projects.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SkillSwap",
+    description: "The premium student collaboration platform.",
+  }
+};
+
+export default async function Home() {
+  // Parallel data fetching for performance
+  const [
+    usersCount,
+    projectsCount,
+    skillsCount,
+    connectionsCount,
+    topProjects,
+    topMembers,
+    trendingSkills,
+    recentActivities,
+  ] = await Promise.all([
+    prisma.user.count(),
+    prisma.project.count(),
+    prisma.skill.count(),
+    prisma.matchRequest.count({ where: { status: "accepted" } }),
+    
+    prisma.project.findMany({
+      where: { status: "active" },
+      take: 3,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        category: true,
+        requiredSkills: true,
+        technologies: true,
+        teamSize: true,
+        difficulty: true,
+        deadline: true,
+        status: true,
+        ownerId: true,
+        owner: { select: { profile: { select: { fullName: true, photo: true } } } },
+        _count: { select: { members: true } }
+      }
+    }),
+    
+    prisma.profile.findMany({
+      where: { profileCompleted: true },
+      take: 3,
+      orderBy: { completedSwaps: "desc" }
+    }),
+    
+    prisma.skill.findMany({
+      take: 10,
+      orderBy: { userSkills: { _count: "desc" } }
+    }),
+    
+    prisma.projectActivity.findMany({
+      take: 5,
+      orderBy: { createdAt: "desc" }
+    }),
+  ]);
+
+  // Format projects
+  const formattedProjects = topProjects.map(p => ({
+    id: p.id,
+    title: p.title,
+    description: p.description,
+    category: p.category,
+    requiredSkills: p.requiredSkills,
+    technologies: p.technologies,
+    teamSize: p.teamSize,
+    difficulty: p.difficulty,
+    deadline: p.deadline,
+    status: p.status,
+    ownerId: p.ownerId,
+    ownerName: p.owner?.profile?.fullName || "Unknown",
+    ownerPhoto: p.owner?.profile?.photo || "",
+    currentMembers: p._count.members
+  }));
+
+  const stats = {
+    users: usersCount,
+    projects: projectsCount,
+    skills: skillsCount,
+    connections: connectionsCount
+  };
+
+  const formattedTrendingSkills = trendingSkills.map(s => ({
+    id: s.id,
+    name: s.name,
+    count: 0
+  }));
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground selection:bg-primary/20">
       <Header />
-
+      
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="relative overflow-hidden py-20 md:py-32">
-          {/* Subtle Ambient Background Glow */}
-          <div className="pointer-events-none absolute left-1/2 top-1/4 -z-10 h-[400px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-tr from-blue-600/20 to-indigo-600/20 blur-[120px]" />
-
-          <div className="container mx-auto flex max-w-5xl flex-col items-center px-4 text-center">
-            <Badge variant="primary" className="mb-6 px-3.5 py-1 text-xs uppercase tracking-wider">
-              Student Collaboration Platform
-            </Badge>
-
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl md:text-7xl">
-              Swap Skills. Build Projects. <br className="hidden sm:inline" />
-              <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                Grow Together.
-              </span>
-            </h1>
-
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-              Connect with fellow students, exchange skills, collaborate on real-world projects, and
-              build an impressive portfolio.
-            </p>
-
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Link href={ROUTES.PROJECTS}>
-                <Button variant="primary" size="lg">
-                  Explore Projects
-                </Button>
-              </Link>
-              <Link href={ROUTES.SKILLS}>
-                <Button variant="outline" size="lg">
-                  Find Skill Matches
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* Features Showcase Section */}
-        <section className="border-t border-border/40 bg-card/10 py-16 md:py-24">
-          <div className="container mx-auto max-w-6xl px-4">
-            <div className="mb-12 text-center">
-              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-                Engineered for Student Success
-              </h2>
-              <p className="mt-3 text-base text-muted-foreground">
-                Clean architecture powering seamless collaboration, matchmaker, and real-time chat.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              <Card className="hover:border-primary/40">
-                <CardHeader>
-                  <Badge variant="success" className="mb-2 w-fit">
-                    Firestore Realtime
-                  </Badge>
-                  <CardTitle>Skill Matchmaker</CardTitle>
-                  <CardDescription>
-                    Intelligent algorithm comparing skills offered vs skills needed to compute
-                    instant compatibility.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <Badge variant="outline">React</Badge>
-                    <Badge variant="outline">Python</Badge>
-                    <Badge variant="outline">UI/UX</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:border-primary/40">
-                <CardHeader>
-                  <Badge variant="primary" className="mb-2 w-fit">
-                    Owner Controls
-                  </Badge>
-                  <CardTitle>Project Collaboration</CardTitle>
-                  <CardDescription>
-                    Manage project progress (0-100%), invite team members, assign tasks, and track
-                    status.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <Badge variant="outline">Progress Tracker</Badge>
-                    <Badge variant="outline">Team Invites</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:border-primary/40">
-                <CardHeader>
-                  <Badge variant="warning" className="mb-2 w-fit">
-                    Live Messaging
-                  </Badge>
-                  <CardTitle>One-to-One Chat</CardTitle>
-                  <CardDescription>
-                    Real-time messaging with typing indicators, read receipts, unread count alerts,
-                    and attachments.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <Badge variant="outline">Realtime Listener</Badge>
-                    <Badge variant="outline">Read Status</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
+        <HeroSection />
+        <StatsSection stats={stats} />
+        <FeaturedProjects projects={formattedProjects as any} />
+        <TopMembers members={topMembers as any} />
+        <TrendingSkills skills={formattedTrendingSkills} />
+        <HowItWorks />
+        <FeaturesSection />
+        <RecentActivity activities={recentActivities as any} />
+        <CTASection />
       </main>
 
       <Footer />
