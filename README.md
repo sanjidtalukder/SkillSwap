@@ -1,6 +1,6 @@
 <div align="center">
-  <img src="https://via.placeholder.com/150?text=SkillSwap+Logo" alt="SkillSwap Logo" width="120" />
-  
+  <img src="https://ibb.co.com/DPPN9qGK" alt="SkillSwap Logo" width="120" />
+
   <h1 align="center">SkillSwap</h1>
   <p align="center">
     <strong>A modern, collaborative platform for students and professionals to exchange skills and build projects together.</strong>
@@ -23,26 +23,31 @@ Built with performance, security, and user experience in mind, SkillSwap offers 
 SkillSwap is packed with production-ready features designed for high engagement and seamless collaboration.
 
 ### 🔐 Core & Authentication
+
 - **Secure Authentication:** Powered by Firebase Auth with JWT validation on protected API routes.
 - **Profile Management:** Users can set up detailed profiles including University, Department, Semester, Bio, and Avatars.
 - **Skill Matrix:** Users can add and manage specific skills with proficiency levels to showcase their expertise.
 
 ### 🤝 Networking
+
 - **Connection System:** Send, accept, or reject match requests to build your professional network.
 - **Intelligent Search:** Search across the platform for users with specific skills, projects, or universities.
 - **Notifications Engine:** Receive real-time alerts for connection requests, project invitations, and messages.
 
 ### 🚀 Project Collaboration
+
 - **Project Discovery:** Browse public projects, filter by categories, and request to join teams.
 - **Join Request Workflow:** Project owners receive dedicated alerts to review applicant profiles and accept/reject requests.
 - **Dedicated Workspaces:** Every accepted project automatically spins up an isolated collaborative Workspace.
 
 ### 💬 Communication (Workspaces & Direct)
+
 - **Real-time Discussion:** Group chats per project featuring markdown support, rich media attachments, and emoji reactions.
 - **Direct Messaging:** Private 1-on-1 chat interface for your accepted connections.
 - **Member Management:** Real-time synchronized member lists with Role Badges and Owner moderation controls.
 
 ### ⚙️ System & Settings
+
 - **Dashboard:** Centralized overview of active projects, pending tasks, and recent activities.
 - **Account Settings:** Manage privacy preferences, update account details, and configure notification rules.
 - **Responsive UI:** Fully fluid layouts optimized for Desktop, Tablet, and Mobile.
@@ -51,12 +56,12 @@ SkillSwap is packed with production-ready features designed for high engagement 
 
 ## 📸 Screenshots
 
-| Dashboard | Workspace Discussion |
-| :---: | :---: |
+|                                        Dashboard                                         |                                          Workspace Discussion                                          |
+| :--------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------: |
 | <img src="https://via.placeholder.com/600x350?text=Dashboard+Preview" alt="Dashboard" /> | <img src="https://via.placeholder.com/600x350?text=Workspace+Discussion" alt="Workspace Discussion" /> |
 
-| User Profile | Search & Discover |
-| :---: | :---: |
+|                                      User Profile                                      |                                      Search & Discover                                       |
+| :------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------: |
 | <img src="https://via.placeholder.com/600x350?text=User+Profile" alt="User Profile" /> | <img src="https://via.placeholder.com/600x350?text=Search+Projects" alt="Search Projects" /> |
 
 ---
@@ -65,23 +70,23 @@ SkillSwap is packed with production-ready features designed for high engagement 
 
 SkillSwap leverages a modern, bleeding-edge tech stack to ensure maximum performance and developer velocity.
 
-| Layer | Technology | Description |
-| --- | --- | --- |
-| **Frontend** | [Next.js (App Router)](https://nextjs.org/) | React framework for server-side rendering and static generation. |
-| **Styling** | [Tailwind CSS](https://tailwindcss.com/) | Utility-first CSS framework for rapid UI development. |
-| **Components** | [shadcn/ui](https://ui.shadcn.com/) | Beautifully designed, accessible, and customizable React components. |
-| **Icons** | [Lucide React](https://lucide.dev/) | Clean and modern iconography. |
-| **Backend** | Next.js API Routes | Serverless edge functions handling RESTful endpoints. |
-| **Database** | PostgreSQL | Relational database for structured data integrity. |
-| **ORM** | [Prisma](https://www.prisma.io/) | Next-generation Node.js and TypeScript ORM. |
-| **Authentication** | [Firebase Auth](https://firebase.google.com/) | Robust, secure identity and session management. |
-| **Markdown** | React-Markdown + Remark-GFM | Safe rendering of markdown in discussion forums. |
+| Layer              | Technology                                    | Description                                                          |
+| ------------------ | --------------------------------------------- | -------------------------------------------------------------------- |
+| **Frontend**       | [Next.js (App Router)](https://nextjs.org/)   | React framework for server-side rendering and static generation.     |
+| **Styling**        | [Tailwind CSS](https://tailwindcss.com/)      | Utility-first CSS framework for rapid UI development.                |
+| **Components**     | [shadcn/ui](https://ui.shadcn.com/)           | Beautifully designed, accessible, and customizable React components. |
+| **Icons**          | [Lucide React](https://lucide.dev/)           | Clean and modern iconography.                                        |
+| **Backend**        | Next.js API Routes                            | Serverless edge functions handling RESTful endpoints.                |
+| **Database**       | PostgreSQL                                    | Relational database for structured data integrity.                   |
+| **ORM**            | [Prisma](https://www.prisma.io/)              | Next-generation Node.js and TypeScript ORM.                          |
+| **Authentication** | [Firebase Auth](https://firebase.google.com/) | Robust, secure identity and session management.                      |
+| **Markdown**       | React-Markdown + Remark-GFM                   | Safe rendering of markdown in discussion forums.                     |
 
 ---
 
 ## 📐 Architecture
 
-SkillSwap follows a modern client-server architecture utilizing Next.js Server Components for heavy lifting and Client Components for interactivity. 
+SkillSwap follows a modern client-server architecture utilizing Next.js Server Components for heavy lifting and Client Components for interactivity.
 
 ```mermaid
 graph TD
@@ -89,7 +94,7 @@ graph TD
     NextJS -->|Protected Routes| Auth[Firebase Auth JWT Verification]
     NextJS -->|Server Actions / APIs| Prisma[Prisma ORM]
     Prisma -->|Raw Queries / Migrations| DB[(PostgreSQL Database)]
-    
+
     Client -.->|State Management| React[React Local State]
     Auth -.->|Session| Client
 ```
@@ -126,11 +131,12 @@ SkillSwap/
 The relational database is structured to support complex networking and project management without sacrificing performance.
 
 ### Core Models:
+
 - **`User` & `Profile`**: Separates core auth data from public-facing profile information.
 - **`Skill` & `UserSkill`**: A many-to-many relationship mapping users to their respective proficiencies.
 - **`MatchRequest`**: Handles the logic for sending, accepting, and rejecting network connections.
 - **`Project`**: The core entity for collaboration, containing metadata like title, description, and team size.
-- **`ProjectMember`**: Maps accepted users to a project. *Note: Workspaces automatically derive their access control from this table.*
+- **`ProjectMember`**: Maps accepted users to a project. _Note: Workspaces automatically derive their access control from this table._
 - **`ProjectJoinRequest`**: Tracks pending applications from users wanting to join a project.
 - **`Conversation` & `Message`**: A polymorphic messaging system that supports both Direct Messages (1-on-1) and Workspace Group Chats. Includes native threading (`parentId`) and emojis (`MessageReaction`).
 - **`Notification`**: A centralized table for platform-wide alerts (messages, requests, system alerts).
@@ -149,6 +155,7 @@ The relational database is structured to support complex networking and project 
 ## 🔗 Connection System
 
 SkillSwap treats professional networking as a first-class citizen.
+
 - **Discover:** Find users on the `/search` page based on overlapping skills.
 - **Request:** Send a connection request (`MatchRequest`). The recipient gets a real-time Notification.
 - **Review:** The recipient can Accept or Reject the request.
@@ -165,7 +172,7 @@ sequenceDiagram
     participant Creator
     participant Platform
     participant Applicant
-    
+
     Creator->>Platform: Creates New Project
     Platform-->>Applicant: Project appears in Discovery Feed
     Applicant->>Platform: Submits Join Request
@@ -194,6 +201,7 @@ The Workspace is an isolated environment generated exclusively for accepted `Pro
 ## 📱 Responsive Design
 
 SkillSwap's UI is strictly engineered to be fluid and fully responsive:
+
 - **Desktop (1024px+):** Expansive grid layouts, persistent sidebars, and dense data tables.
 - **Tablet (768px - 1024px):** Collapsible sidebars, adjusted grid columns, and optimized touch targets.
 - **Mobile (<768px):** Bottom navigation bars, hamburger menus, stacked cards, and full-screen modal takeovers to ensure complete functionality on the go.
@@ -214,12 +222,14 @@ SkillSwap's UI is strictly engineered to be fluid and fully responsive:
 Follow these steps to get SkillSwap running on your local machine.
 
 ### 1. Clone the repository
+
 ```bash
 git clone https://github.com/yourusername/skillswap.git
 cd skillswap
 ```
 
 ### 2. Install dependencies
+
 ```bash
 npm install
 # or
@@ -227,7 +237,9 @@ yarn install
 ```
 
 ### 3. Setup Environment Variables
+
 Create a `.env` file in the root directory and populate it:
+
 ```env
 # Database
 DATABASE_URL="postgresql://user:password@localhost:5432/skillswap?schema=public"
@@ -243,16 +255,20 @@ FIREBASE_PRIVATE_KEY="your_private_key"
 ```
 
 ### 4. Database Initialization
+
 Push the Prisma schema to your database and generate the TypeScript client:
+
 ```bash
 npx prisma db push
 npx prisma generate
 ```
 
 ### 5. Start the Development Server
+
 ```bash
 npm run dev
 ```
+
 Visit `http://localhost:3000` in your browser.
 
 ---
@@ -271,6 +287,7 @@ Visit `http://localhost:3000` in your browser.
 ## 🤝 Contributing
 
 We welcome contributions from the community! To contribute:
+
 1. Fork the repository.
 2. Create a new branch (`git checkout -b feature/amazing-feature`).
 3. Commit your changes (`git commit -m 'Add amazing feature'`).
@@ -290,6 +307,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👨‍💻 Author
 
 **Your Name**
+
 - GitHub: [@yourusername](https://github.com/yourusername)
 - LinkedIn: [Your Name](https://linkedin.com/in/yourusername)
 - Portfolio: [yourwebsite.com](https://yourwebsite.com)
@@ -298,6 +316,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ## 🙏 Acknowledgements
+
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Prisma Documentation](https://www.prisma.io/docs/)
 - [shadcn/ui](https://ui.shadcn.com/) for the incredible component library.
@@ -308,10 +327,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   <p align="center">
   Made with ❤️ by the <strong>SkillSwap Team</strong><br><br>
 
-  🧪 <strong>Adib Al Zawan</strong> — Project Review, Testing, Quality Assurance & Feature Validation.<br>
+🧪 <strong>Adib Al Zawan</strong> — Project Review, Testing, Quality Assurance & Feature Validation.<br>
 
-  👨‍💻 <strong>Sanjid Talukder</strong> — Full Stack Development, System Architecture, Database Design, UI/UX Implementation, Backend APIs, Workspace, Messaging, Testing & Deployment Lead.<br>
+👨‍💻 <strong>Sanjid Talukder</strong> — Full Stack Development, System Architecture, Database Design, UI/UX Implementation, Backend APIs, Workspace, Messaging, Testing & Deployment Lead.<br>
 
-  🧪 <strong>Mizan</strong> — Project Review, Testing, Bug Verification & Feedback.
+🧪 <strong>Mizan</strong> — Project Review, Testing, Bug Verification & Feedback.
 </p>
 </div>
