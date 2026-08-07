@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: "Swap skills, collaborate on projects, and build real-world experience together.",
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -19,6 +21,7 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.className} min-h-screen bg-background text-foreground antialiased`}>
         <AppProvider>{children}</AppProvider>
+        <Toaster richColors theme="dark" position="bottom-right" />
       </body>
     </html>
   );

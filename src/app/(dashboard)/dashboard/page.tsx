@@ -20,6 +20,8 @@ import { fetchWithAuth } from "@/lib/api-client";
 import { format } from "date-fns";
 import { Activity, Briefcase, Users, Bell, Plus, Search, Edit, CheckCircle, Clock, ChevronRight } from "lucide-react";
 import { ROUTES } from "@/constants";
+import { toast } from "sonner";
+import { ConnectionDialog } from "@/components/common/ConnectionDialog";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -35,9 +37,12 @@ export default function DashboardPage() {
     Boolean(user) && !authLoading && profileCompleted === true
   );
   
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogStatus, setDialogStatus] = useState<"not_connected" | "pending">("not_connected");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+
   const {
-    notice: connectNotice,
-    error: connectError,
     pendingRecipientId,
     sendConnectionRequest,
   } = useConnectionRequest(user);
@@ -90,11 +95,17 @@ export default function DashboardPage() {
       if (res.success) {
         router.push(`/chat/${res.data.id}`);
       } else {
-        alert(res.error || "Failed to start chat");
+        if (res.connectionStatus === "not_connected" || res.connectionStatus === "pending") {
+          setDialogStatus(res.connectionStatus);
+          setSelectedUserId(uid);
+          setDialogOpen(true);
+        } else {
+          toast.error(res.error || "Failed to start chat");
+        }
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to start chat");
+      toast.error("Failed to start chat");
     } finally {
       setStartingChatId(null);
     }
@@ -143,11 +154,6 @@ export default function DashboardPage() {
             </Button>
           </div>
         </div>
-
-        {(profileError || error || connectError) && (
-          <Alert variant="error">{profileError || error || connectError}</Alert>
-        )}
-        {connectNotice && <Alert variant="success">{connectNotice}</Alert>}
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -426,6 +432,17 @@ export default function DashboardPage() {
         </div>
 
       </main>
+      
+      {selectedUserId && (
+        <ConnectionDialog
+          isOpen={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          status={dialogStatus}
+          onSendRequest={async () => {
+            await sendConnectionRequest(selectedUserId);
+          }}
+        />
+      )}
       <Footer />
     </div>
   );

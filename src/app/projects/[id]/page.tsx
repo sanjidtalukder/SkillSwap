@@ -9,6 +9,7 @@ import { Footer } from "@/components/common/Footer";
 import { Header } from "@/components/common/Header";
 import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
+import { toast } from "sonner";
 import { fetchWithAuth } from "@/lib/api-client";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { Calendar, Users, FolderOpen, Code, CheckCircle, XCircle } from "lucide-react";
@@ -85,9 +86,9 @@ export default function ProjectDetailsPage() {
       
       if (!response.ok) throw new Error(data.error || "Failed to send join request");
       
-      alert("Join request sent successfully!");
+      toast.success("Join request sent successfully!");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error joining project");
+      toast.error(err instanceof Error ? err.message : "Error joining project");
     } finally {
       setIsJoining(false);
     }
@@ -104,7 +105,7 @@ export default function ProjectDetailsPage() {
       
       router.push("/projects");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error deleting project");
+      toast.error(err instanceof Error ? err.message : "Error deleting project");
     }
   };
 

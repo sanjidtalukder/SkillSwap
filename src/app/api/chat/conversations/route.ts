@@ -95,7 +95,11 @@ export async function POST(request: NextRequest) {
 
     if (!connection || connection.status !== "accepted") {
       return NextResponse.json(
-        { success: false, error: "You must be connected before starting a conversation." },
+        { 
+          success: false, 
+          error: "You must be connected before starting a conversation.",
+          connectionStatus: connection ? connection.status : "not_connected" 
+        },
         { status: 403 }
       );
     }

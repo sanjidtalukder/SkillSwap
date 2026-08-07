@@ -81,7 +81,7 @@ export default function ProjectsPage() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Header />
       <main className="container mx-auto max-w-6xl flex-1 space-y-8 p-6 md:p-10">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
               Project Board
@@ -132,7 +132,9 @@ export default function ProjectsPage() {
             <option value="Intermediate">Intermediate</option>
             <option value="Advanced">Advanced</option>
           </select>
-          <Button type="submit" variant="secondary">Filter</Button>
+          <Button type="submit" variant="secondary">
+            Filter
+          </Button>
         </form>
 
         {error && <Alert variant="error">{error}</Alert>}
@@ -144,7 +146,10 @@ export default function ProjectsPage() {
         ) : projects.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
-              <Card key={project.id} className="flex flex-col group h-full hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
+              <Card
+                key={project.id}
+                className="group flex h-full flex-col hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10"
+              >
                 <CardHeader className="space-y-4">
                   <div className="flex items-center justify-between gap-3">
                     <CardTitle className="truncate text-lg">{project.title}</CardTitle>
@@ -163,7 +168,7 @@ export default function ProjectsPage() {
                   <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                     {project.description}
                   </p>
-                  
+
                   <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground/80">
                     <div className="flex items-center gap-1">
                       <FolderOpen className="h-3 w-3" />
@@ -171,16 +176,18 @@ export default function ProjectsPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="h-3 w-3" />
-                      <span>{project.currentMembers + 1}/{project.teamSize} Team</span>
+                      <span>
+                        {project.currentMembers + 1}/{project.teamSize} Team
+                      </span>
                     </div>
                     {project.deadline && (
-                      <div className="flex items-center gap-1 col-span-2">
+                      <div className="col-span-2 flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         <span>Ends {formatDistanceToNow(new Date(project.deadline))}</span>
                       </div>
                     )}
                   </div>
-                  
+
                   {project.technologies.length > 0 && (
                     <div className="mt-auto space-y-1.5">
                       <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
@@ -189,18 +196,20 @@ export default function ProjectsPage() {
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {project.technologies.slice(0, 3).map((tech) => (
-                          <Badge key={tech} variant="outline" className="text-[10px] px-1.5 py-0">
+                          <Badge key={tech} variant="outline" className="px-1.5 py-0 text-[10px]">
                             {tech}
                           </Badge>
                         ))}
                         {project.technologies.length > 3 && (
-                          <span className="text-[10px] text-muted-foreground">+{project.technologies.length - 3}</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            +{project.technologies.length - 3}
+                          </span>
                         )}
                       </div>
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="pt-4 border-t border-border/40">
+                <CardFooter className="border-t border-border/40 pt-4">
                   <Link href={`/projects/${project.id}`} className="w-full">
                     <Button variant="secondary" className="w-full">
                       View Details

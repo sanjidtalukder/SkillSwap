@@ -17,6 +17,8 @@ import { fetchWithAuth } from "@/lib/api-client";
 import { UserProfile } from "@/features/profiles/types/profile";
 import Link from "next/link";
 import { ROUTES } from "@/constants";
+import { toast } from "sonner";
+import { ConnectionDialog } from "@/components/common/ConnectionDialog";
 
 export default function UserProfilePage() {
   const params = useParams<{ username: string }>();
@@ -27,6 +29,9 @@ export default function UserProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startingChat, setStartingChat] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogStatus, setDialogStatus] = useState<"not_connected" | "pending">("not_connected");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -67,11 +72,17 @@ export default function UserProfilePage() {
       if (res.success) {
         router.push(`/chat/${res.data.id}`);
       } else {
-        alert(res.error || "Failed to start chat");
+        if (res.connectionStatus === "not_connected" || res.connectionStatus === "pending") {
+          setDialogStatus(res.connectionStatus);
+          setSelectedUserId(profile.uid);
+          setDialogOpen(true);
+        } else {
+          toast.error(res.error || "Failed to start chat");
+        }
       }
     } catch (error) {
       console.error(error);
-      alert("Failed to start chat");
+      toast.error("Failed to start chat");
     } finally {
       setStartingChat(false);
     }
@@ -303,6 +314,17 @@ export default function UserProfilePage() {
 
       </main>
       <Footer />
+      
+      {selectedUserId && (
+        <ConnectionDialog
+          isOpen={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          status={dialogStatus}
+          onSendRequest={async () => {
+            await sendRequest();
+          }}
+        />
+      )}
     </div>
   );
 }
