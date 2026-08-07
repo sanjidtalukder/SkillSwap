@@ -13,6 +13,7 @@ type ProfileCardData = UserProfile | UserDocument;
 interface ProfileCardProps {
   profile: ProfileCardData;
   onConnect?: (profileId: string) => void;
+  onMessage?: (profileId: string) => void;
   isConnecting?: boolean;
   showActions?: boolean;
 }
@@ -42,6 +43,7 @@ const actionLinkClassName =
 export function ProfileCard({
   profile,
   onConnect,
+  onMessage,
   isConnecting = false,
   showActions = true,
 }: ProfileCardProps) {
@@ -112,10 +114,10 @@ export function ProfileCard({
         </div>
 
         {showActions && (
-          <div className="mt-auto grid grid-cols-2 gap-2 pt-2">
+          <div className={`mt-auto grid gap-2 pt-2 ${onMessage ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <Link href={`${ROUTES.PROFILE}/${data.uid}`} className={actionLinkClassName}>
               <ExternalLink className="h-4 w-4" />
-              View Profile
+              View
             </Link>
             <Button
               type="button"
@@ -125,9 +127,19 @@ export function ProfileCard({
               disabled={!onConnect || isConnecting}
               isLoading={isConnecting}
             >
-              <MessageCircle className="h-4 w-4" />
               Connect
             </Button>
+            {onMessage && (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                className="w-full"
+                onClick={() => onMessage(data.uid)}
+              >
+                <MessageCircle className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         )}
       </CardContent>

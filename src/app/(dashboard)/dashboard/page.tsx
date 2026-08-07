@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Alert } from "@/components/ui/Alert";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";
@@ -18,7 +19,9 @@ import { fetchWithAuth } from "@/lib/api-client";
 import { format } from "date-fns";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const [startingChatId, setStartingChatId] = useState<string | null>(null);
   const {
     isCheckingProfile,
     profileCompleted,
@@ -42,6 +45,28 @@ export default function DashboardPage() {
     () => (user ? profiles.filter((profile) => profile.uid !== user.uid) : profiles),
     [profiles, user]
   );
+
+  const handleStartChat = async (uid: string) => {
+    if (startingChatId) return;
+    setStartingChatId(uid);
+    try {
+      const response = await fetchWithAuth("/api/chat/conversations", {
+        method: "POST",
+        body: JSON.stringify({ targetUserId: uid })
+      });
+      const res = await response.json();
+      if (res.success) {
+        router.push(`/chat/${res.data.id}`);
+      } else {
+        alert(res.error || "Failed to start chat");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to start chat");
+    } finally {
+      setStartingChatId(null);
+    }
+  };
 
   useEffect(() => {
     if (activeTab === "projects" && user && !projectData) {
@@ -101,7 +126,8 @@ export default function DashboardPage() {
                     key={profile.uid}
                     profile={profile}
                     onConnect={sendConnectionRequest}
-                    isConnecting={pendingRecipientId === profile.uid}
+                    onMessage={handleStartChat}
+                    isConnecting={pendingRecipientId === profile.uid || startingChatId === profile.uid}
                   />
                 ))}
               </div>

@@ -10,11 +10,17 @@ import { ProfileCard } from "@/features/profiles/components/ProfileCard";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { useProfileById } from "@/features/profiles/hooks/useProfileById";
 import { useProfileRedirect } from "@/features/profiles/hooks/useProfileStatus";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, MessageCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { fetchWithAuth } from "@/lib/api-client";
+import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 
 export default function ProfileDetailPage() {
   const params = useParams<{ uid: string }>();
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const [startingChat, setStartingChat] = useState(false);
   const {
     isCheckingProfile,
     profileCompleted,
@@ -28,6 +34,28 @@ export default function ProfileDetailPage() {
   );
 
   const isBusy = authLoading || isCheckingProfile || profileCompleted !== true || isLoading;
+
+  const handleStartChat = async () => {
+    if (!profile?.uid || startingChat) return;
+    setStartingChat(true);
+    try {
+      const response = await fetchWithAuth("/api/chat/conversations", {
+        method: "POST",
+        body: JSON.stringify({ targetUserId: profile.uid })
+      });
+      const res = await response.json();
+      if (res.success) {
+        router.push(`/chat/${res.data.id}`);
+      } else {
+        alert(res.error || "Failed to start chat");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to start chat");
+    } finally {
+      setStartingChat(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -47,6 +75,15 @@ export default function ProfileDetailPage() {
               {profile.linkedin && <ProfileLink label="LinkedIn" href={profile.linkedin} />}
               {profile.portfolio && <ProfileLink label="Portfolio" href={profile.portfolio} />}
             </div>
+            
+            {user?.uid !== profile.firebaseUID && (
+              <div className="flex justify-end mt-4">
+                <Button onClick={handleStartChat} disabled={startingChat}>
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  {startingChat ? "Starting chat..." : "Message"}
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
           <EmptyState

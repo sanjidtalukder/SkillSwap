@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Alert } from "@/components/ui/Alert";
+import { fetchWithAuth } from "@/lib/api-client";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Footer } from "@/components/common/Footer";
@@ -12,7 +14,9 @@ import { useConnectionRequest } from "@/features/profiles/hooks/useConnectionReq
 import { useCompletedProfiles } from "@/features/profiles/hooks/useCompletedProfiles";
 
 export default function SkillsPage() {
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const [startingChatId, setStartingChatId] = useState<string | null>(null);
   
   // Fetch all completed profiles
   const { profiles, isLoading, error, reload } = useCompletedProfiles(true);
@@ -28,6 +32,28 @@ export default function SkillsPage() {
     () => (user ? profiles.filter((profile) => profile.uid !== user.uid) : profiles),
     [profiles, user]
   );
+
+  const handleStartChat = async (uid: string) => {
+    if (startingChatId) return;
+    setStartingChatId(uid);
+    try {
+      const response = await fetchWithAuth("/api/chat/conversations", {
+        method: "POST",
+        body: JSON.stringify({ targetUserId: uid })
+      });
+      const res = await response.json();
+      if (res.success) {
+        router.push(`/chat/${res.data.id}`);
+      } else {
+        alert(res.error || "Failed to start chat");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to start chat");
+    } finally {
+      setStartingChatId(null);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -58,7 +84,8 @@ export default function SkillsPage() {
                 key={profile.uid}
                 profile={profile}
                 onConnect={sendConnectionRequest}
-                isConnecting={pendingRecipientId === profile.uid}
+                onMessage={handleStartChat}
+                isConnecting={pendingRecipientId === profile.uid || startingChatId === profile.uid}
               />
             ))}
           </div>
