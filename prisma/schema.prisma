@@ -20,6 +20,7 @@ model User {
   receivedNotifications Notification[]       @relation("RecipientNotifications")
   sentNotifications     Notification[]       @relation("SenderNotifications")
   profile               Profile?
+  settings              UserSettings?
   ownedProjects         Project[]            @relation("ProjectOwner")
   projectMembers        ProjectMember[]
   keywords              SearchKeyword[]
@@ -62,6 +63,28 @@ model SearchKeyword {
   userId  String
   keyword String
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, keyword])
+}
+
+model UserSettings {
+  id                       String   @id @default(cuid())
+  userId                   String   @unique
+  searchAppearance         Boolean  @default(true)
+  showOnlineStatus         Boolean  @default(true)
+  allowConnectionRequests  Boolean  @default(true)
+  allowProjectInvitations  Boolean  @default(true)
+  messagePrivacy           String   @default("everyone") // everyone, connections
+  notifyConnectionRequests Boolean  @default(true)
+  notifyProjectRequests    Boolean  @default(true)
+  notifyProjectAccepted    Boolean  @default(true)
+  notifyMessages           Boolean  @default(true)
+  notifySystem             Boolean  @default(true)
+  notifyEmail              Boolean  @default(true)
+  theme                    String   @default("dark") // dark, light, system
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @default(now()) @updatedAt
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Skill {

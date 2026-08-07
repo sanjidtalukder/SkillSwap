@@ -1,7 +1,8 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 import {
   AVAILABILITY_OPTIONS,
   Availability,
@@ -69,6 +70,8 @@ const initialState: ProfileFormState = {
 
 export function CompleteProfileForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEditMode = searchParams.get("mode") === "edit";
   const { user, loading: authLoading } = useAuth();
   const {
     profile,
@@ -113,10 +116,10 @@ export function CompleteProfileForm() {
   }, [authLoading, router, user]);
 
   useEffect(() => {
-    if (!profileLoading && profile?.profileCompleted) {
+    if (!profileLoading && profile?.profileCompleted && !isEditMode) {
       router.replace(ROUTES.DASHBOARD);
     }
-  }, [profile?.profileCompleted, profileLoading, router]);
+  }, [profile?.profileCompleted, profileLoading, router, isEditMode]);
 
   const progress = useMemo(() => ((step + 1) / steps.length) * 100, [step]);
 
@@ -229,9 +232,14 @@ export function CompleteProfileForm() {
       return;
     }
 
-    setNotice(profile?.profileCompleted ? "Profile updated successfully." : "Profile completed successfully.");
+    toast.success("Profile updated successfully.");
     router.refresh();
-    router.replace(ROUTES.DASHBOARD);
+    
+    if (isEditMode) {
+      router.replace(`/u/${profile?.username || user.uid}`);
+    } else {
+      router.replace(ROUTES.DASHBOARD);
+    }
   };
 
   if (authLoading || profileLoading) {

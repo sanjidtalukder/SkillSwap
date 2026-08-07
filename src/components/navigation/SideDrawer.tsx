@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { LogOut, Home, Folder, Lightbulb, Search, Bell, X } from "lucide-react";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { authService } from "@/features/auth/services/authService";
+import { useCurrentProfile } from "@/features/profiles/hooks/useCurrentProfile";
 import { Avatar } from "@/components/ui/Avatar";
 import { ROUTES } from "@/constants";
 
@@ -16,7 +17,8 @@ interface SideDrawerProps {
 
 export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
   const pathname = usePathname();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
+  const { profile } = useCurrentProfile(user, loading);
 
   // Prevent scrolling when drawer is open
   useEffect(() => {
@@ -72,15 +74,25 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
             <X className="w-5 h-5" />
           </button>
           
-          <div className="mb-4">
-            <Avatar src={user?.photoURL || undefined} alt="Profile" className="w-16 h-16 border-2 border-primary/20" />
+          <div className="mb-4 relative inline-block">
+            <Avatar 
+              src={user?.photoURL || undefined} 
+              alt={profile?.fullName || user?.displayName || "Profile"} 
+              className="w-16 h-16 border-2 border-primary/20" 
+            />
+            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-background rounded-full"></span>
           </div>
           <h2 className="text-lg font-bold text-foreground">
-            {user?.displayName || "SkillSwap User"}
+            {profile?.fullName || user?.displayName || "SkillSwap User"}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {user?.email}
+            @{profile?.username || user?.email?.split('@')[0] || "user"}
           </p>
+          {profile?.university && (
+            <div className="mt-3 text-xs font-medium text-foreground/80 bg-background/50 border border-border/30 rounded-md p-2 w-fit">
+              🎓 {profile.university}
+            </div>
+          )}
         </div>
 
         {/* Navigation Links */}

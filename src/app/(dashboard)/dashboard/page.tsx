@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Alert } from "@/components/ui/Alert";
 import { CardSkeleton } from "@/components/ui/CardSkeleton";
@@ -25,6 +25,7 @@ import { ConnectionDialog } from "@/components/common/ConnectionDialog";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const [startingChatId, setStartingChatId] = useState<string | null>(null);
   const {
@@ -47,7 +48,9 @@ export default function DashboardPage() {
     sendConnectionRequest,
   } = useConnectionRequest(user);
 
-  const [activeTab, setActiveTab] = useState<"skills" | "projects">("skills");
+  const [activeTab, setActiveTab] = useState<"skills" | "projects">(
+    searchParams.get("tab") === "projects" ? "projects" : "skills"
+  );
   const [projectData, setProjectData] = useState<any>(null);
   const [projectLoading, setProjectLoading] = useState(false);
 
@@ -77,7 +80,9 @@ export default function DashboardPage() {
       fetchWithAuth("/api/projects/me")
         .then(res => res.json())
         .then(data => {
-          if (data.success) setProjectData(data.data);
+          if (data.success) {
+            setProjectData(data.data);
+          }
         })
         .finally(() => setProjectLoading(false));
     }
@@ -340,23 +345,27 @@ export default function DashboardPage() {
               ) : projectData ? (
                 <>
                   <section>
-                    <h2 className="text-xl font-bold mb-4">My Created Projects</h2>
+                    <h2 className="text-xl font-bold mb-4">Projects Created By Me</h2>
                     {projectData.createdProjects.length > 0 ? (
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {projectData.createdProjects.map((p: any) => (
-                          <div key={p.id} className="p-5 border border-border/60 rounded-xl bg-card shadow-sm hover:shadow-md transition-shadow">
+                          <div key={p.id} className="flex flex-col p-5 border border-border/60 rounded-xl bg-card shadow-sm hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start mb-2">
                               <Link href={`/projects/${p.id}`} className="font-semibold text-lg hover:text-primary transition-colors line-clamp-1">{p.title}</Link>
                               <Badge variant={p.status === "active" ? "success" : "secondary"}>{p.status}</Badge>
                             </div>
                             <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{p.description}</p>
-                            <div className="flex justify-between items-center text-xs text-muted-foreground pt-4 border-t border-border/40">
+                            <div className="flex justify-between items-center text-xs text-muted-foreground pt-4 border-t border-border/40 mb-4">
                               <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> Team: {p._count.members + 1} / {p.teamSize}</span>
                               {p._count.joinRequests > 0 && (
                                 <Badge variant="warning" className="px-2 py-0 animate-pulse text-[10px]">
                                   Pending Requests: {p._count.joinRequests}
                                 </Badge>
                               )}
+                            </div>
+                            <div className="mt-auto pt-2 grid grid-cols-2 gap-2">
+                              <Button variant="outline" size="sm" onClick={() => router.push(`/projects/${p.id}/edit`)} className="w-full text-xs">Edit Project</Button>
+                              <Button variant="primary" size="sm" onClick={() => router.push(`/projects/${p.id}/workspace`)} className="w-full text-xs">Open Workspace</Button>
                             </div>
                           </div>
                         ))}
@@ -374,11 +383,18 @@ export default function DashboardPage() {
                     {projectData.joinedProjects.length > 0 ? (
                       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         {projectData.joinedProjects.map((p: any) => (
-                          <div key={p.id} className="p-5 border border-border/60 rounded-xl bg-card shadow-sm hover:shadow-md transition-shadow">
+                          <div key={p.id} className="flex flex-col p-5 border border-border/60 rounded-xl bg-card shadow-sm hover:shadow-md transition-shadow">
                             <Link href={`/projects/${p.id}`} className="font-semibold text-lg hover:text-primary transition-colors line-clamp-1 mb-2 block">{p.title}</Link>
-                            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/40">
-                              <Avatar src={p.owner?.profile?.photo} alt="Owner" className="w-6 h-6" />
-                              <p className="text-xs text-muted-foreground">Owner: <span className="font-medium text-foreground">{p.owner.profile?.fullName || "User"}</span></p>
+                            <div className="flex justify-between items-center text-xs text-muted-foreground pt-4 border-t border-border/40 mb-4">
+                              <div className="flex items-center gap-2">
+                                <Avatar src={p.owner?.profile?.photo} alt="Owner" className="w-6 h-6" />
+                                <span><span className="font-medium text-foreground">{p.owner?.profile?.fullName || "User"}</span></span>
+                              </div>
+                              <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> {p._count?.members ? p._count.members + 1 : 1} / {p.teamSize}</span>
+                            </div>
+                            <div className="mt-auto pt-2 grid grid-cols-2 gap-2">
+                              <Button variant="primary" size="sm" onClick={() => router.push(`/projects/${p.id}/workspace`)} className="w-full text-xs">Open Workspace</Button>
+                              <Button variant="outline" size="sm" onClick={() => toast.error("Leave Project coming soon")} className="w-full text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground">Leave Project</Button>
                             </div>
                           </div>
                         ))}
@@ -386,54 +402,34 @@ export default function DashboardPage() {
                     ) : (
                       <div className="p-6 border border-dashed rounded-xl text-center">
                         <p className="text-sm text-muted-foreground">You haven&apos;t joined any projects yet.</p>
+                        <Button variant="outline" size="sm" onClick={() => router.push("/projects")}>Explore Projects</Button>
                       </div>
                     )}
                   </section>
 
                   <section>
-                    <h2 className="text-xl font-bold mb-4">My Join Requests</h2>
+                    <h2 className="text-xl font-bold mb-4">Pending Join Requests</h2>
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {projectData.pendingRequests.length > 0 && (
-                        <div className="bg-card border border-border/60 rounded-xl p-5 shadow-sm">
-                          <h3 className="font-semibold text-warning mb-4 flex items-center"><Clock className="w-4 h-4 mr-2" /> Pending</h3>
-                          <ul className="space-y-3">
-                            {projectData.pendingRequests.map((r: any) => (
-                              <li key={r.id} className="text-sm bg-warning/10 p-3 rounded-lg border border-warning/20">
-                                <span className="block text-warning-foreground font-medium mb-1">{r.project.title}</span>
-                                <span className="text-xs text-warning-foreground/70">{format(new Date(r.createdAt), 'MMM d, yyyy')}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {projectData.acceptedRequests.length > 0 && (
-                        <div className="bg-card border border-border/60 rounded-xl p-5 shadow-sm">
-                          <h3 className="font-semibold text-success mb-4 flex items-center"><CheckCircle className="w-4 h-4 mr-2" /> Accepted</h3>
-                          <ul className="space-y-3">
-                            {projectData.acceptedRequests.map((r: any) => (
-                              <li key={r.id} className="text-sm bg-success/10 p-3 rounded-lg border border-success/20">
-                                <span className="block text-success-foreground font-medium">{r.project.title}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      {projectData.rejectedRequests.length > 0 && (
-                        <div className="bg-card border border-border/60 rounded-xl p-5 shadow-sm">
-                          <h3 className="font-semibold text-destructive mb-4 flex items-center"><Activity className="w-4 h-4 mr-2" /> Rejected</h3>
-                          <ul className="space-y-3">
-                            {projectData.rejectedRequests.map((r: any) => (
-                              <li key={r.id} className="text-sm bg-destructive/10 p-3 rounded-lg border border-destructive/20">
-                                <span className="block text-destructive-foreground font-medium">{r.project.title}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      
-                      {!projectData.pendingRequests.length && !projectData.acceptedRequests.length && !projectData.rejectedRequests.length && (
+                      {projectData.pendingRequests.length > 0 ? (
+                         projectData.pendingRequests.map((r: any) => (
+                          <div key={r.id} className="flex flex-col bg-card border border-border/60 rounded-xl p-5 shadow-sm">
+                            <div className="flex items-start justify-between mb-2">
+                              <span className="block text-foreground font-semibold line-clamp-1">{r.project.title}</span>
+                              <Badge variant="warning" className="text-[10px]">Pending</Badge>
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                               <p className="text-xs text-muted-foreground">Owner: <span className="font-medium text-foreground">{r.project.owner?.profile?.fullName || "Unknown"}</span></p>
+                            </div>
+                            <span className="text-xs text-muted-foreground mt-2 block mb-4">Requested: {format(new Date(r.createdAt), 'MMM d, yyyy')}</span>
+                            
+                            <div className="mt-auto pt-4 border-t border-border/40">
+                              <Button variant="outline" size="sm" onClick={() => toast.error("Cancel Request coming soon")} className="w-full text-xs">Cancel Request</Button>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
                          <div className="col-span-full p-6 border border-dashed rounded-xl text-center">
-                           <p className="text-sm text-muted-foreground">No join requests.</p>
+                           <p className="text-sm text-muted-foreground">No pending join requests.</p>
                          </div>
                       )}
                     </div>

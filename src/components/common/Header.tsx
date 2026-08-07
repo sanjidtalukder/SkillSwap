@@ -13,10 +13,13 @@ import { NotificationBell } from "@/features/notifications/components/Notificati
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 import { SideDrawer } from "@/components/navigation/SideDrawer";
 import { Avatar } from "@/components/ui/Avatar";
+import { ProfileDropdown } from "@/components/common/ProfileDropdown";
+import { useCurrentProfile } from "@/features/profiles/hooks/useCurrentProfile";
 
 export const Header = memo(function Header() {
   const router = useRouter();
   const { user, loading, isAuthenticated } = useAuth();
+  const { profile } = useCurrentProfile(user, loading);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -65,31 +68,13 @@ export const Header = memo(function Header() {
                 
                 <div className="flex items-center gap-4 ml-4 pl-4 border-l border-border/40 h-8">
                   <NotificationBell />
-                  
-                  <Link 
-                    href={`/u/${user?.uid}`} 
-                    className="flex items-center gap-2 group hover:opacity-80 transition-opacity"
-                  >
-                    <Avatar 
-                      src={user?.photoURL || undefined} 
-                      alt="Profile" 
-                      className="w-8 h-8 border border-border/50" 
+                  {user && (
+                    <ProfileDropdown 
+                      user={user} 
+                      profile={profile} 
+                      onLogout={handleLogout} 
                     />
-                    <span className="max-w-[140px] truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                      {user?.displayName || user?.email}
-                    </span>
-                  </Link>
-                  
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleLogout}
-                    aria-label="Logout"
-                    className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-full px-2"
-                  >
-                    <LogOut className="h-4 w-4" />
-                  </Button>
+                  )}
                 </div>
               </>
             ) : (
@@ -111,10 +96,15 @@ export const Header = memo(function Header() {
                 <NotificationBell />
                 <button
                   onClick={() => setIsDrawerOpen(true)}
-                  className="p-2 ml-1 text-foreground/80 hover:bg-muted/50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="ml-1 relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background group"
                   aria-label="Open mobile menu"
                 >
-                  <Menu className="w-6 h-6" />
+                  <Avatar 
+                    src={user?.photoURL || undefined} 
+                    alt={profile?.fullName || user?.displayName || "User"}
+                    className="w-8 h-8 border-2 border-transparent group-hover:border-primary/50 transition-colors"
+                  />
+                  <span className="absolute bottom-0 right-0 w-2 h-2 bg-green-500 border border-background rounded-full"></span>
                 </button>
               </>
             )}

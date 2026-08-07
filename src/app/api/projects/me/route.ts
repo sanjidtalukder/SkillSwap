@@ -35,6 +35,10 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             title: true,
+            teamSize: true,
+            _count: {
+              select: { members: true }
+            },
             owner: { select: { profile: { select: { fullName: true } } } }
           }
         },
@@ -51,7 +55,14 @@ export async function GET(request: NextRequest) {
         createdAt: true,
         project: {
           select: {
-            title: true
+            title: true,
+            owner: {
+              select: {
+                profile: {
+                  select: { fullName: true }
+                }
+              }
+            }
           }
         }
       },
