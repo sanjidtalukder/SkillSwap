@@ -316,5 +316,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
   <br />
-  <p>Made with ❤️ by the SkillSwap Team.</p>
+  <p align="center">
+  Made with ❤️ by the <strong>SkillSwap Team</strong><br><br>
+
+  👨‍💻 <strong>Sanjid Talukder</strong> — Full Stack Development, System Architecture, Database Design, UI/UX Implementation, Backend APIs, Workspace, Messaging, Testing & Deployment Lead.<br>
+
+  🧪 <strong>Adib Al Zawan</strong> — Project Review, Testing, Quality Assurance & Feature Validation.<br>
+
+  🧪 <strong>Mizan</strong> — Project Review, Testing, Bug Verification & Feedback.
+</p>
 </div>
