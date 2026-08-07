@@ -37,6 +37,9 @@ interface ProjectDetail {
   ownerId: string;
   ownerName: string;
   ownerPhoto: string;
+  ownerUniversity?: string;
+  ownerUsername?: string;
+  joinRequestStatus?: "pending" | "accepted" | "rejected" | null;
   createdAt: string;
   members: ProjectMember[];
 }
@@ -86,6 +89,8 @@ export default function ProjectDetailsPage() {
       
       if (!response.ok) throw new Error(data.error || "Failed to send join request");
       
+      
+      setProject((prev: any) => ({ ...prev, joinRequestStatus: "pending" }));
       toast.success("Join request sent successfully!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Error joining project");
@@ -162,8 +167,19 @@ export default function ProjectDetailsPage() {
                 </Link>
                 <Button variant="destructive" className="w-full" onClick={handleDelete}>Delete Project</Button>
               </>
-            ) : isMember ? (
-              <Button disabled variant="outline" className="w-full">You are a Member</Button>
+            ) : isMember || project.joinRequestStatus === "accepted" ? (
+              <Button className="w-full" onClick={() => toast.info("Workspace feature coming soon!")}>Open Workspace</Button>
+            ) : project.joinRequestStatus === "pending" ? (
+              <Button disabled variant="outline" className="w-full">Request Sent</Button>
+            ) : project.joinRequestStatus === "rejected" ? (
+              <Button 
+                onClick={handleJoinProject} 
+                isLoading={isJoining}
+                disabled={project.status !== "active"}
+                className="w-full"
+              >
+                Join Again
+              </Button>
             ) : (
               <Button 
                 onClick={handleJoinProject} 
@@ -262,19 +278,27 @@ export default function ProjectDetailsPage() {
               <h3 className="font-semibold text-lg">Team Members</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <Avatar src={project.ownerPhoto} alt={project.ownerName} size="sm" />
+                  <Avatar src={project.ownerPhoto} alt={project.ownerName} size="md" />
                   <div className="flex-1 overflow-hidden">
                     <p className="truncate text-sm font-medium">{project.ownerName}</p>
-                    <p className="text-xs text-muted-foreground">Owner</p>
+                    <p className="text-xs text-muted-foreground truncate">{project.ownerUniversity || "University"}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="success" className="text-[10px] px-1.5 py-0">Owner</Badge>
+                      <Link href={`/u/${project.ownerUsername || project.ownerId}`} className="text-[10px] text-primary hover:underline">View Profile</Link>
+                    </div>
                   </div>
                 </div>
                 
-                {project.members.map(member => (
+                {project.members.map((member: any) => (
                   <div key={member.id} className="flex items-center gap-3">
-                    <Avatar src={member.photo} alt={member.name} size="sm" />
+                    <Avatar src={member.photo} alt={member.name} size="md" />
                     <div className="flex-1 overflow-hidden">
                       <p className="truncate text-sm font-medium">{member.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{member.role}</p>
+                      <p className="text-xs text-muted-foreground truncate">{member.university || "University"}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] text-muted-foreground capitalize">{member.role}</span>
+                        <Link href={`/u/${member.username || member.userId}`} className="text-[10px] text-primary hover:underline">View Profile</Link>
+                      </div>
                     </div>
                   </div>
                 ))}

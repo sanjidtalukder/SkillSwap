@@ -32,40 +32,40 @@ export async function POST(
     });
 
     if (existing) {
-      return NextResponse.json({ success: false, error: "Request already exists" }, { status: 400 });
-    }
-
-    // Check if already a member
-    const existingMember = await prisma.projectMember.findUnique({
-      where: {
-        projectId_userId: { projectId: id, userId: user!.id }
+      if (existing.status === "rejected") {
+        // Allow re-applying
+        await prisma.projectJoinRequest.update({
+          where: { id: existing.id },
+          data: { status: "pending" }
+        });
+      } else {
+        return NextResponse.json({ success: false, error: "Request already exists" }, { status: 400 });
       }
-    });
-
-    if (existingMember) {
-      return NextResponse.json({ success: false, error: "You are already a member" }, { status: 400 });
+    } else {
+      await prisma.projectJoinRequest.create({
+        data: {
+          projectId: id,
+          userId: user!.id,
+        },
+      });
     }
 
-    const joinRequest = await prisma.projectJoinRequest.create({
-      data: {
-        projectId: id,
-        userId: user!.id,
-      },
-    });
+    const applicantProfile = await prisma.profile.findUnique({ where: { userId: user!.id } });
+    const applicantName = applicantProfile?.fullName || "Someone";
 
-    // Optionally create a notification here to the project owner
+    // Send notification to the project owner
     await prisma.notification.create({
       data: {
         recipientId: project.ownerId,
         senderId: user!.id,
         type: "project_join_request",
         title: "New Join Request",
-        body: `Someone requested to join your project: ${project.title}`,
-        linkUrl: `/projects/${project.id}`,
+        body: `${applicantName} wants to join your project: ${project.title}`,
+        linkUrl: `/dashboard?tab=requests`,
       }
     });
 
-    return NextResponse.json({ success: true, data: joinRequest });
+    return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : "Unknown error" },

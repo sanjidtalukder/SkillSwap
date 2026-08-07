@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Avatar } from "@/components/ui/Avatar";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { ProfileCard } from "@/features/profiles/components/ProfileCard";
+import { ProjectRequestsSection } from "@/features/projects/components/ProjectRequestsSection";
 import { useConnectionRequest } from "@/features/profiles/hooks/useConnectionRequest";
 import { useCompletedProfiles } from "@/features/profiles/hooks/useCompletedProfiles";
 import { useProfileRedirect } from "@/features/profiles/hooks/useProfileStatus";
@@ -47,7 +48,7 @@ export default function DashboardPage() {
     sendConnectionRequest,
   } = useConnectionRequest(user);
 
-  const [activeTab, setActiveTab] = useState<"skills" | "projects">("skills");
+  const [activeTab, setActiveTab] = useState<"skills" | "projects" | "requests">("skills");
   const [projectData, setProjectData] = useState<any>(null);
   const [projectLoading, setProjectLoading] = useState(false);
 
@@ -302,6 +303,12 @@ export default function DashboardPage() {
             >
               My Projects
             </button>
+            <button
+              onClick={() => setActiveTab("requests")}
+              className={`px-4 py-2 font-medium text-sm rounded-t-lg transition-colors ${activeTab === "requests" ? "bg-primary/10 text-primary border-b-2 border-primary" : "text-muted-foreground hover:bg-muted"}`}
+            >
+              Project Requests
+            </button>
           </div>
 
           {activeTab === "skills" && (
@@ -435,6 +442,12 @@ export default function DashboardPage() {
                   </section>
                 </>
               ) : null}
+            </div>
+          )}
+
+          {activeTab === "requests" && (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <ProjectRequestsSection />
             </div>
           )}
         </div>

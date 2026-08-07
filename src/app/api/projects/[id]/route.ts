@@ -9,6 +9,14 @@ export async function GET(
   const { id } = await params;
 
   try {
+    let currentUser = null;
+    try {
+      const { user } = await verifyAuth(request);
+      currentUser = user;
+    } catch (e) {
+      // User is not authenticated, ignore
+    }
+
     const project = await prisma.project.findUnique({
       where: { id },
       select: {
@@ -28,7 +36,7 @@ export async function GET(
           select: {
             firebaseUid: true,
             profile: {
-              select: { fullName: true, photo: true }
+              select: { fullName: true, photo: true, university: true, username: true }
             }
           }
         },
@@ -39,7 +47,7 @@ export async function GET(
             user: {
               select: {
                 firebaseUid: true,
-                profile: { select: { fullName: true, photo: true } }
+                profile: { select: { fullName: true, photo: true, university: true, username: true } }
               }
             }
           }
@@ -49,6 +57,14 @@ export async function GET(
 
     if (!project) {
       return NextResponse.json({ success: false, error: "Project not found" }, { status: 404 });
+    }
+
+    let joinRequestStatus = null;
+    if (currentUser) {
+      const joinReq = await prisma.projectJoinRequest.findUnique({
+        where: { projectId_userId: { projectId: id, userId: currentUser.id } }
+      });
+      joinRequestStatus = joinReq?.status || null;
     }
 
     const formattedProject = {
@@ -65,13 +81,18 @@ export async function GET(
       ownerId: project.owner.firebaseUid, // Send Firebase UID so frontend can match
       ownerName: project.owner.profile?.fullName || "SkillSwap Member",
       ownerPhoto: project.owner.profile?.photo || "",
+      ownerUniversity: project.owner.profile?.university || "",
+      ownerUsername: project.owner.profile?.username || "",
       createdAt: project.createdAt,
-      members: project.members.map((m) => ({
+      joinRequestStatus,
+      members: project.members.map((m: any) => ({
         id: m.id,
         userId: m.user.firebaseUid,
         role: m.role,
         name: m.user.profile?.fullName || "Member",
         photo: m.user.profile?.photo || "",
+        university: m.user.profile?.university || "",
+        username: m.user.profile?.username || "",
       })),
     };
 
