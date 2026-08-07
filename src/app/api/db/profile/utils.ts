@@ -279,36 +279,30 @@ export async function saveCompletedProfile(firebaseUid: string, input: any) {
 
   const skillNameToId = new Map(dbSkills.map(s => [s.name, s.id]));
 
-  // 2. Bulk insert UserSkill (skillsHave)
-  await prisma.userSkill.deleteMany({
-    where: { userId: dbUser.id }
-  });
-
-  if (skillsHave.length > 0) {
-    await prisma.userSkill.createMany({
-      data: skillsHave.map(skillName => ({
-        userId: dbUser.id,
-        skillId: skillNameToId.get(skillName)!,
-        level: "Intermediate"
-      })),
-      skipDuplicates: true
-    });
-  }
-
-  // 3. Bulk insert UserSkillNeed (skillsNeed)
-  await prisma.userSkillNeed.deleteMany({
-    where: { userId: dbUser.id }
-  });
-
-  if (skillsNeed.length > 0) {
-    await prisma.userSkillNeed.createMany({
-      data: skillsNeed.map(skillName => ({
-        userId: dbUser.id,
-        skillId: skillNameToId.get(skillName)!
-      })),
-      skipDuplicates: true
-    });
-  }
+  // 2 & 3. Transactional Delete and Bulk Insert
+  await prisma.$transaction([
+    prisma.userSkill.deleteMany({ where: { userId: dbUser.id } }),
+    ...(skillsHave.length > 0 ? [
+      prisma.userSkill.createMany({
+        data: skillsHave.map(skillName => ({
+          userId: dbUser.id,
+          skillId: skillNameToId.get(skillName)!,
+          level: "Intermediate"
+        })),
+        skipDuplicates: true
+      })
+    ] : []),
+    prisma.userSkillNeed.deleteMany({ where: { userId: dbUser.id } }),
+    ...(skillsNeed.length > 0 ? [
+      prisma.userSkillNeed.createMany({
+        data: skillsNeed.map(skillName => ({
+          userId: dbUser.id,
+          skillId: skillNameToId.get(skillName)!
+        })),
+        skipDuplicates: true
+      })
+    ] : [])
+  ]);
 
   // Update search keywords
   await prisma.searchKeyword.deleteMany({
