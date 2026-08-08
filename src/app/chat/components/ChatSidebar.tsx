@@ -7,6 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { fetchWithAuth } from "@/lib/api-client";
 import { Avatar } from "@/components/ui/Avatar";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { MessageCircle } from "lucide-react";
 
 interface Conversation {
   id: string;
@@ -59,7 +60,10 @@ export default function ChatSidebar() {
   if (loading) {
     return (
       <div className="p-4 space-y-4">
-        <h2 className="text-xl font-bold mb-4">Messages</h2>
+        <h2 className="text-2xl font-bold mb-4 tracking-tight flex items-center gap-2">
+          <MessageCircle className="w-6 h-6 text-primary" />
+          Messages
+        </h2>
         {[1, 2, 3].map((i) => (
           <div key={i} className="flex items-center space-x-4">
             <Skeleton className="h-12 w-12 rounded-full" />
@@ -76,7 +80,10 @@ export default function ChatSidebar() {
   return (
     <div className="flex flex-col h-full border-r border-border">
       <div className="p-4 border-b border-border">
-        <h2 className="text-xl font-bold">Messages</h2>
+        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+          <MessageCircle className="w-6 h-6 text-primary" />
+          Messages
+        </h1>
       </div>
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {/* Direct Messages Section */}

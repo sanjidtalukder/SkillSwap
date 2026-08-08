@@ -15,14 +15,17 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-export function OverviewTab({ project }: { project: any }) {
+export function OverviewTab({ project, setActiveTab }: { project: any, setActiveTab?: (tab: string) => void }) {
   // Task Progress Calculation
   const totalTasks = project.tasks?.length || 0;
   const completedTasks = project.tasks?.filter((t: any) => t.status === "DONE").length || 0;
   const progressPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  // Filter Active Tasks (Not DONE)
-  const activeTasks = project.tasks?.filter((t: any) => t.status !== "DONE").slice(0, 4) || [];
+  // Filter Active Tasks (Not DONE) - Limit to 2 for compact dashboard
+  const activeTasks = project.tasks?.filter((t: any) => t.status !== "DONE").slice(0, 2) || [];
+  
+  // Limit recent activities to 4
+  const recentActivities = project.activities?.slice(0, 4) || [];
 
   // Member compilation
   const allMembers = [
@@ -185,6 +188,15 @@ export function OverviewTab({ project }: { project: any }) {
                 <p className="text-sm text-muted-foreground mt-1">No active tasks at the moment.</p>
               </div>
             )}
+            
+            {totalTasks > 0 && (
+              <button 
+                onClick={() => setActiveTab && setActiveTab("tasks")}
+                className="mt-4 text-sm font-medium text-primary hover:text-primary/80 transition-colors flex items-center gap-1 group"
+              >
+                View all tasks <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </button>
+            )}
           </div>
 
           {/* 5. PROJECT INFORMATION */}
@@ -229,16 +241,16 @@ export function OverviewTab({ project }: { project: any }) {
 
         {/* RIGHT COLUMN: Recent Activity */}
         <div className="lg:col-span-1">
-          <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-sm h-full max-h-[800px] flex flex-col">
+          <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col">
             <h3 className="text-lg font-bold flex items-center gap-2 mb-6">
               <Activity className="w-5 h-5" />
               Recent Activity
             </h3>
             
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 -mr-2 space-y-6">
-              {project.activities && project.activities.length > 0 ? (
-                <div className="relative border-l border-border/50 ml-3 space-y-8 pb-4">
-                  {project.activities.map((activity: any, index: number) => (
+            <div className="space-y-6">
+              {recentActivities.length > 0 ? (
+                <div className="relative border-l border-border/50 ml-3 space-y-8 pb-2">
+                  {recentActivities.map((activity: any, index: number) => (
                     <div key={activity.id} className="relative pl-6">
                       <span className="absolute -left-[13px] top-1 w-6 h-6 bg-background rounded-full border border-border/50 flex items-center justify-center shadow-sm">
                         {getActivityIcon(activity.type)}
@@ -253,10 +265,9 @@ export function OverviewTab({ project }: { project: any }) {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-48 text-center opacity-70">
+                <div className="flex flex-col items-center justify-center py-10 text-center opacity-70">
                   <Activity className="w-8 h-8 text-muted-foreground mb-3" />
                   <p className="text-sm font-medium text-foreground">No recent activity</p>
-                  <p className="text-xs text-muted-foreground mt-1">Activities will appear here as the project progresses.</p>
                 </div>
               )}
             </div>

@@ -89,14 +89,14 @@ export default function WorkspacePage() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "overview": return <OverviewTab project={project} />;
+      case "overview": return <OverviewTab project={project} setActiveTab={setActiveTab} />;
       case "discussion": return <DiscussionTab project={project} user={user} />;
       case "members": return <MembersTab project={project} isOwner={isOwner} user={user} />;
       case "tasks": return <TasksTab project={project} user={user} />;
       case "files": return <FilesTab project={project} user={user} />;
       case "announcements": return <AnnouncementsTab project={project} isOwner={isOwner} user={user} />;
       case "settings": return isOwner ? <SettingsTab project={project} /> : null;
-      default: return <OverviewTab project={project} />;
+      default: return <OverviewTab project={project} setActiveTab={setActiveTab} />;
     }
   };
 
