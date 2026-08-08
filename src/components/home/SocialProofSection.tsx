@@ -15,34 +15,31 @@ export function SocialProofSection({ stats }: { stats: { users: number, projects
   const marqueeTech = [...technologies, ...technologies, ...technologies];
 
   return (
-    <section className="py-12 border-y border-border/40 bg-muted/20 overflow-hidden">
+    <section className="py-8 md:py-10 border-y border-border/40 bg-muted/20 overflow-hidden">
       <div className="container mx-auto px-4 max-w-6xl">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-10">
-          <div className="flex items-center gap-2 text-muted-foreground font-medium">
-            <span className="h-px w-8 bg-border"></span>
+        <div className="flex flex-col items-center justify-center mb-8 md:mb-10">
+          <div className="flex items-center gap-3 text-muted-foreground/90 font-medium text-sm sm:text-base">
+            <span className="h-px w-6 sm:w-12 bg-border"></span>
             Trusted by {stats.users.toLocaleString()}+ students building {stats.projects.toLocaleString()}+ projects
-            <span className="h-px w-8 bg-border"></span>
+            <span className="h-px w-6 sm:w-12 bg-border"></span>
           </div>
         </div>
 
         {/* Infinite Marquee */}
-        <div className="relative flex overflow-hidden group">
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-background to-transparent z-10" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-background to-transparent z-10" />
-          
+        <div className="relative flex overflow-hidden group [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
           <motion.div
-            className="flex gap-8 items-center whitespace-nowrap"
-            animate={{ x: ["0%", "-33.33%"] }}
+            className="flex gap-4 sm:gap-6 items-center whitespace-nowrap py-1"
+            animate={{ x: ["0%", "-33.333333%"] }}
             transition={{ 
               repeat: Infinity, 
               ease: "linear", 
-              duration: 20 
+              duration: 35 
             }}
           >
             {marqueeTech.map((tech, index) => (
               <div 
-                key={index} 
-                className="flex items-center justify-center px-6 py-3 rounded-full bg-background border border-border/50 text-foreground/70 text-sm font-semibold shadow-sm transition-colors hover:text-primary hover:border-primary/50"
+                key={`${tech}-${index}`} 
+                className="flex items-center justify-center px-5 py-2.5 rounded-full bg-card/60 backdrop-blur-sm border border-border/80 text-foreground/90 text-sm font-medium shadow-sm transition-all hover:text-primary hover:border-primary/50 hover:bg-primary/5"
               >
                 {tech}
               </div>
