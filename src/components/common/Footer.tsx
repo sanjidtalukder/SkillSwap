@@ -1,7 +1,8 @@
 import React, { memo } from "react";
 import Link from "next/link";
-import { SITE_CONFIG, ROUTES } from "@/constants";
+import { ROUTES, SITE_CONFIG } from "@/constants";
 import { Github, Linkedin, Twitter, Mail, Heart } from "lucide-react";
+import { Logo } from "@/components/common/Logo";
 
 export const Footer = memo(function Footer() {
   const currentYear = new Date().getFullYear();
@@ -47,11 +48,9 @@ export const Footer = memo(function Footer() {
             <Link
               href={ROUTES.HOME}
               aria-label="SkillSwap Home"
-              className="mb-6 inline-flex items-center space-x-2 text-2xl font-black tracking-tight transition-opacity hover:opacity-80"
+              className="mb-6 inline-flex items-center transition-transform hover:scale-[1.02]"
             >
-              <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
-                {SITE_CONFIG.name}
-              </span>
+              <Logo size="lg" />
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-sm mb-8">
               The premium student collaboration platform. Swap skills, join ambitious projects, and build a world-class portfolio alongside talented peers from top universities.

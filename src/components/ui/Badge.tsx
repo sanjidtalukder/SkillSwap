@@ -10,13 +10,12 @@ export const Badge = memo(function Badge({ className, variant = "primary", ...pr
     "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2";
 
   const variants = {
-    primary: "border-transparent bg-primary/15 text-primary border border-primary/20",
-    secondary: "border-transparent bg-secondary text-secondary-foreground",
-    success: "border-transparent bg-emerald-500/15 text-emerald-400 border border-emerald-500/20",
-    warning: "border-transparent bg-amber-500/15 text-amber-400 border border-amber-500/20",
-    destructive:
-      "border-transparent bg-destructive/15 text-destructive border border-destructive/20",
-    outline: "text-foreground border border-border/80",
+    primary: "border-primary/30 bg-primary/20 text-primary-300 border shadow-xs",
+    secondary: "border-slate-700 bg-slate-800/80 text-slate-300 border",
+    success: "border-emerald-500/30 bg-emerald-500/15 text-emerald-300 border shadow-xs",
+    warning: "border-amber-500/30 bg-amber-500/15 text-amber-300 border shadow-xs",
+    destructive: "border-rose-500/30 bg-rose-500/15 text-rose-300 border shadow-xs",
+    outline: "text-slate-300 border border-slate-700/80 bg-slate-800/40",
   };
 
   return <div className={cn(baseStyles, variants[variant], className)} {...props} />;

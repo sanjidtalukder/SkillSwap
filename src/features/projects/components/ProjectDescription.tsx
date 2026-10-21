@@ -162,17 +162,19 @@ export function ProjectDescription({ description }: ProjectDescriptionProps) {
   }
 
   return (
-    <div className="space-y-6 max-w-[75ch]">
+    <div className="space-y-6">
       {sections.map((section, idx) => (
-        <Card key={idx} className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+        <Card key={idx} className="overflow-hidden border border-slate-800/80 bg-slate-900/60 shadow-xl shadow-black/20 backdrop-blur-md">
           {section.title && (
-            <CardHeader className="bg-muted/30 border-b border-border/40 pb-4 pt-5 px-6">
-              <CardTitle className="text-lg text-foreground/90 font-semibold tracking-tight">
+            <CardHeader className="bg-slate-950/40 border-b border-slate-800/70 pb-3.5 pt-4 px-6">
+              <CardTitle className="text-base text-slate-100 font-bold tracking-tight">
                 {section.title}
               </CardTitle>
             </CardHeader>
           )}
-          <CardContent className="p-6">{parseContent(section.content)}</CardContent>
+          <CardContent className="p-6 text-slate-300 leading-relaxed text-sm md:text-base space-y-4">
+            {parseContent(section.content)}
+          </CardContent>
         </Card>
       ))}
     </div>

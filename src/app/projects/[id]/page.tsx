@@ -138,104 +138,167 @@ export default function ProjectDetailsPage() {
   const isMember = project.members.some(m => m.userId === user?.uid);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-950 text-foreground selection:bg-primary/20 selection:text-primary-200">
+      {/* Ambient background glow orbs */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-indigo-600/15 blur-[120px]" />
+        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] rounded-full bg-cyan-600/10 blur-[140px]" />
+        <div className="absolute -bottom-40 left-1/3 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b12_1px,transparent_1px),linear-gradient(to_bottom,#1e293b12_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+      </div>
+
       <Header />
-      <main className="container mx-auto max-w-4xl flex-1 space-y-8 p-6 md:p-10">
+      <main className="container relative z-10 mx-auto max-w-5xl flex-1 space-y-8 p-6 md:p-10">
         
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-border/40">
-          <div className="space-y-4">
+        {/* Navigation Breadcrumb / Back */}
+        <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
+          <Link href="/projects" className="hover:text-primary transition-colors flex items-center gap-1">
+            ← Back to Project Board
+          </Link>
+          <span className="text-slate-600">/</span>
+          <span className="text-slate-300 truncate max-w-[200px]">{project.title}</span>
+        </div>
+
+        {/* Hero Header Section */}
+        <div className="p-6 md:p-8 rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950/90 shadow-2xl shadow-black/40 backdrop-blur-md space-y-6">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Badge 
+              variant={project.status === "active" ? "success" : "secondary"}
+              className="text-[11px] font-semibold tracking-wider uppercase px-2.5 py-0.5"
+            >
+              {project.status}
+            </Badge>
+            <Badge variant="outline" className="text-[11px] border-slate-700 bg-slate-800/50 text-slate-300 px-2.5 py-0.5">
+              {project.difficulty}
+            </Badge>
+            <Badge variant="secondary" className="text-[11px] bg-slate-800/70 border-slate-700/80 text-primary-300 px-2.5 py-0.5">
+              <FolderOpen className="mr-1.5 h-3 w-3 inline text-primary" />
+              {project.category}
+            </Badge>
+          </div>
+
+          <h1 className="text-3xl font-extrabold md:text-5xl tracking-tight leading-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+            {project.title}
+          </h1>
+
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-800/60">
             <div className="flex items-center gap-3">
-              <Badge variant={project.status === "active" ? "success" : "secondary"}>
-                {project.status.toUpperCase()}
-              </Badge>
-              <Badge variant="outline">{project.difficulty}</Badge>
-            </div>
-            <h1 className="text-3xl font-bold md:text-5xl tracking-tight leading-tight">{project.title}</h1>
-            <div className="flex items-center gap-3 pt-2">
-              <Avatar src={project.ownerPhoto} alt={project.ownerName} size="md" />
+              <Avatar src={project.ownerPhoto} alt={project.ownerName} size="md" className="ring-2 ring-primary/30" />
               <div className="text-sm">
-                <p className="text-muted-foreground">Created by</p>
-                <Link href={`/profile/${project.ownerId}`} className="font-medium hover:underline">
+                <p className="text-xs text-slate-400">Created by</p>
+                <Link href={`/profile/${project.ownerId}`} className="font-semibold text-slate-200 hover:text-primary transition-colors">
                   {project.ownerName}
                 </Link>
               </div>
             </div>
+
+            <div className="flex items-center gap-4 text-xs text-slate-400">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="h-4 w-4 text-slate-400" />
+                <span>Posted {format(new Date(project.createdAt), 'MMM d, yyyy')}</span>
+              </div>
+              {project.deadline && (
+                <div className="flex items-center gap-1.5 text-amber-400">
+                  <Calendar className="h-4 w-4" />
+                  <span>Ends {formatDistanceToNow(new Date(project.deadline))}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Content Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 relative items-start">
+        {/* Content & Sidebar Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative items-start">
           
-          <div className="md:col-span-2 space-y-10">
+          <div className="md:col-span-2 space-y-8">
             <ProjectDescription description={project.description} />
 
             {isOwner && (
-              <section className="space-y-4 pt-6 border-t border-border/40">
-                <h2 className="text-xl font-semibold tracking-tight">Project Join Requests</h2>
+              <section className="space-y-4 p-6 rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl shadow-black/20 backdrop-blur-md">
+                <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  Project Join Requests
+                </h2>
                 <ProjectJoinRequests projectId={project.id} />
               </section>
             )}
 
-            <section className="space-y-4 pt-6 border-t border-border/40">
-              <h2 className="text-xl font-semibold tracking-tight">Required Skills</h2>
+            {/* Required Skills Card */}
+            <section className="p-6 rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl shadow-black/20 backdrop-blur-md space-y-4">
+              <h2 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                Required Skills
+              </h2>
               {project.requiredSkills.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {project.requiredSkills.map(skill => (
-                    <Badge key={skill} variant="secondary" className="px-3 py-1 text-sm font-medium">{skill}</Badge>
+                    <Badge 
+                      key={skill} 
+                      variant="secondary" 
+                      className="px-3 py-1 text-xs font-semibold bg-slate-800/80 border border-slate-700/80 text-slate-200 shadow-sm"
+                    >
+                      {skill}
+                    </Badge>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground italic">Not specified</p>
+                <p className="text-sm text-slate-400 italic">Not specified</p>
               )}
             </section>
 
-            <section className="space-y-4 pt-2">
-              <h2 className="text-xl font-semibold tracking-tight">Technologies</h2>
+            {/* Technologies Stack Card */}
+            <section className="p-6 rounded-2xl border border-slate-800/80 bg-slate-900/60 shadow-xl shadow-black/20 backdrop-blur-md space-y-4">
+              <h2 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+                <Code className="h-5 w-5 text-cyan-400" />
+                Technologies & Tools
+              </h2>
               {project.technologies.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {project.technologies.map(tech => (
-                    <Badge key={tech} variant="outline" className="px-3 py-1 text-sm bg-background">
-                      <Code className="mr-1.5 h-3.5 w-3.5 inline text-muted-foreground" />
+                    <Badge 
+                      key={tech} 
+                      variant="outline" 
+                      className="px-3 py-1 text-xs font-medium border-slate-700 bg-slate-950/60 text-slate-300"
+                    >
                       {tech}
                     </Badge>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground italic">Not specified</p>
+                <p className="text-sm text-slate-400 italic">Not specified</p>
               )}
             </section>
 
           </div>
 
-          {/* Sidebar */}
+          {/* Sticky Sidebar */}
           <div className="space-y-6 md:sticky top-24">
             
-            <div className="rounded-xl border border-border/40 bg-card p-6 shadow-sm space-y-5">
+            {/* Quick Action Card */}
+            <div className="rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 to-slate-950/90 p-6 shadow-xl shadow-black/30 backdrop-blur-md space-y-5">
               
               <div className="flex flex-col gap-3">
                 {isOwner ? (
                   <>
-                    <Button className="w-full" onClick={() => openWorkspace(project.id)} isLoading={isVerifying}>
+                    <Button className="w-full shadow-lg shadow-primary/25 font-semibold py-2.5" onClick={() => openWorkspace(project.id)} isLoading={isVerifying}>
                       Open Workspace
                     </Button>
                     <Link href={`/projects/${project.id}/edit`}>
-                      <Button variant="secondary" className="w-full">Edit Project</Button>
+                      <Button variant="secondary" className="w-full border border-slate-700/80 hover:bg-slate-800 font-medium">Edit Project</Button>
                     </Link>
-                    <Button variant="destructive" className="w-full" onClick={handleDelete}>Delete Project</Button>
+                    <Button variant="destructive" className="w-full shadow-rose-950/50" onClick={handleDelete}>Delete Project</Button>
                   </>
                 ) : isMember || project.joinRequestStatus === "accepted" ? (
-                  <Button className="w-full" onClick={() => openWorkspace(project.id)} isLoading={isVerifying}>
+                  <Button className="w-full shadow-lg shadow-primary/25 font-semibold py-2.5" onClick={() => openWorkspace(project.id)} isLoading={isVerifying}>
                     Open Workspace
                   </Button>
                 ) : project.joinRequestStatus === "pending" ? (
-                  <Button disabled variant="outline" className="w-full">Request Sent</Button>
+                  <Button disabled variant="outline" className="w-full border-slate-700 text-slate-400">Request Sent</Button>
                 ) : project.joinRequestStatus === "rejected" ? (
                   <Button 
                     onClick={handleJoinProject} 
                     isLoading={isJoining}
                     disabled={project.status !== "active"}
-                    className="w-full"
+                    className="w-full shadow-lg shadow-primary/25 font-semibold py-2.5"
                   >
                     Request Workspace Access
                   </Button>
@@ -244,75 +307,90 @@ export default function ProjectDetailsPage() {
                     onClick={handleJoinProject} 
                     isLoading={isJoining}
                     disabled={project.status !== "active"}
-                    className="w-full"
+                    className="w-full shadow-lg shadow-primary/25 font-semibold py-2.5"
                   >
                     Join Workspace
                   </Button>
                 )}
               </div>
 
-              <div className="h-px bg-border/40 w-full" />
+              <div className="h-px bg-slate-800 w-full" />
 
-              <h3 className="font-semibold text-lg tracking-tight">Project Details</h3>
+              <h3 className="font-bold text-base tracking-tight text-white">Project Overview</h3>
               
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-2"><FolderOpen className="h-4 w-4" /> Category</span>
-                  <span className="font-medium">{project.category}</span>
+              <div className="space-y-3.5 text-sm">
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-slate-400 flex items-center gap-2">
+                    <FolderOpen className="h-4 w-4 text-primary" /> Category
+                  </span>
+                  <span className="font-semibold text-slate-200">{project.category}</span>
                 </div>
                 
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-2"><Users className="h-4 w-4" /> Team Size</span>
-                  <span className="font-medium">{project.members.length + 1} / {project.teamSize}</span>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-slate-400 flex items-center gap-2">
+                    <Users className="h-4 w-4 text-indigo-400" /> Team Capacity
+                  </span>
+                  <span className="font-semibold text-slate-200">{project.members.length + 1} / {project.teamSize}</span>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground flex items-center gap-2"><Calendar className="h-4 w-4" /> Created</span>
-                  <span className="font-medium">{format(new Date(project.createdAt), 'MMM d, yyyy')}</span>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-slate-400 flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-slate-400" /> Created
+                  </span>
+                  <span className="font-semibold text-slate-200">{format(new Date(project.createdAt), 'MMM d, yyyy')}</span>
                 </div>
 
                 {project.deadline && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-muted-foreground flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-orange-400" /> Deadline
+                  <div className="flex justify-between items-center py-1">
+                    <span className="text-slate-400 flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-amber-400" /> Deadline
                     </span>
-                    <span className="font-medium">{format(new Date(project.deadline), 'MMM d, yyyy')}</span>
+                    <span className="font-semibold text-amber-300">{format(new Date(project.deadline), 'MMM d, yyyy')}</span>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="rounded-xl border border-border/40 bg-card p-6 shadow-sm space-y-5">
-              <h3 className="font-semibold text-lg tracking-tight">Team Members</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Avatar src={project.ownerPhoto} alt={project.ownerName} size="md" />
+            {/* Team Members Card */}
+            <div className="rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 to-slate-950/90 p-6 shadow-xl shadow-black/30 backdrop-blur-md space-y-5">
+              <h3 className="font-bold text-base tracking-tight text-white flex items-center justify-between">
+                <span>Team Members</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-normal">
+                  {project.members.length + 1}
+                </span>
+              </h3>
+
+              <div className="space-y-3.5">
+                {/* Owner Item */}
+                <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-950/50 border border-slate-800/60">
+                  <Avatar src={project.ownerPhoto} alt={project.ownerName} size="md" className="ring-1 ring-primary/40" />
                   <div className="flex-1 overflow-hidden">
-                    <p className="truncate text-sm font-medium">{project.ownerName}</p>
-                    <p className="text-xs text-muted-foreground truncate">{project.ownerUniversity || "University"}</p>
+                    <p className="truncate text-sm font-semibold text-slate-200">{project.ownerName}</p>
+                    <p className="text-xs text-slate-400 truncate">{project.ownerUniversity || "University"}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary" className="text-[10px] px-2 py-0.5 font-medium bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">Owner</Badge>
-                      <Link href={`/u/${project.ownerUsername || project.ownerId}`} className="text-xs text-muted-foreground hover:text-primary transition-colors">View Profile</Link>
+                      <Badge variant="secondary" className="text-[10px] px-2 py-0.5 font-semibold bg-primary/20 text-primary-300 border-primary/30">Owner</Badge>
+                      <Link href={`/u/${project.ownerUsername || project.ownerId}`} className="text-xs text-slate-400 hover:text-primary transition-colors">View Profile</Link>
                     </div>
                   </div>
                 </div>
                 
+                {/* Members List */}
                 {project.members.map((member: any) => (
-                  <div key={member.id} className="flex items-center gap-3">
+                  <div key={member.id} className="flex items-center gap-3 p-2 rounded-xl bg-slate-950/40 border border-slate-800/50">
                     <Avatar src={member.photo} alt={member.name} size="md" />
                     <div className="flex-1 overflow-hidden">
-                      <p className="truncate text-sm font-medium">{member.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{member.university || "University"}</p>
+                      <p className="truncate text-sm font-semibold text-slate-200">{member.name}</p>
+                      <p className="text-xs text-slate-400 truncate">{member.university || "University"}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs font-medium text-muted-foreground capitalize bg-muted/50 px-2 py-0.5 rounded-full">{member.role}</span>
-                        <Link href={`/u/${member.username || member.userId}`} className="text-xs text-muted-foreground hover:text-primary transition-colors">View Profile</Link>
+                        <span className="text-xs font-medium text-slate-300 capitalize bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700/60">{member.role}</span>
+                        <Link href={`/u/${member.username || member.userId}`} className="text-xs text-slate-400 hover:text-primary transition-colors">View Profile</Link>
                       </div>
                     </div>
                   </div>
                 ))}
                 
                 {project.members.length === 0 && (
-                  <p className="text-sm text-muted-foreground italic text-center py-2">No other members yet.</p>
+                  <p className="text-xs text-slate-500 italic text-center py-2">No other members yet.</p>
                 )}
               </div>
             </div>

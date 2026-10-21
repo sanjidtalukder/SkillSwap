@@ -18,6 +18,25 @@ export const authService = {
     return signInWithEmailAndPassword(auth, credentials.email, credentials.password);
   },
 
+  async loginAsDemo(): Promise<UserCredential> {
+    const demoEmail = "demo@skillswap.com";
+    const demoPassword = "DemoUser@12345";
+    try {
+      // First try logging into existing demo account
+      return await signInWithEmailAndPassword(auth, demoEmail, demoPassword);
+    } catch (err: any) {
+      // If demo user does not exist in Firebase Auth yet, register it automatically
+      if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential" || err.code === "auth/invalid-login-credentials") {
+        const cred = await createUserWithEmailAndPassword(auth, demoEmail, demoPassword);
+        await updateProfile(cred.user, {
+          displayName: "Demo Explorer",
+        });
+        return cred;
+      }
+      throw err;
+    }
+  },
+
   getCurrentUser() {
     return auth.currentUser;
   },

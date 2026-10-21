@@ -9,6 +9,7 @@ import { authService } from "@/features/auth/services/authService";
 import { useCurrentProfile } from "@/features/profiles/hooks/useCurrentProfile";
 import { Avatar } from "@/components/ui/Avatar";
 import { ROUTES } from "@/constants";
+import { Logo } from "@/components/common/Logo";
 
 interface SideDrawerProps {
   isOpen: boolean;
@@ -74,6 +75,9 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
             <X className="w-5 h-5" />
           </button>
           
+          <div className="mb-4 flex items-center justify-between">
+            <Logo size="sm" />
+          </div>
           <div className="mb-4 relative inline-block">
             <Avatar 
               src={user?.photoURL || undefined} 

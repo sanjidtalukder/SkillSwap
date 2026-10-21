@@ -15,6 +15,7 @@ import { SideDrawer } from "@/components/navigation/SideDrawer";
 import { Avatar } from "@/components/ui/Avatar";
 import { ProfileDropdown } from "@/components/common/ProfileDropdown";
 import { useCurrentProfile } from "@/features/profiles/hooks/useCurrentProfile";
+import { Logo } from "@/components/common/Logo";
 
 export const Header = memo(function Header() {
   const router = useRouter();
@@ -32,19 +33,17 @@ export const Header = memo(function Header() {
       <header
         role="banner"
         aria-label="Main Navigation Header"
-        className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80"
+        className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-950/70"
       >
-        <div className="container flex h-14 max-w-screen-2xl items-center justify-between gap-3 px-4">
+        <div className="container flex h-16 max-w-screen-2xl items-center justify-between gap-3 px-4 sm:px-8">
           
           {/* Left: Logo */}
           <Link
             href={ROUTES.HOME}
             aria-label="SkillSwap Home"
-            className="flex shrink-0 items-center space-x-2 text-lg font-bold sm:text-xl transition-opacity hover:opacity-80"
+            className="flex shrink-0 items-center transition-transform hover:scale-[1.02] active:scale-[0.98]"
           >
-            <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">
-              {SITE_CONFIG.name}
-            </span>
+            <Logo size="md" />
           </Link>
 
           {/* Desktop Navigation (Hidden on Mobile) */}

@@ -115,17 +115,68 @@ export function AuthForm({ mode = "login" }: AuthFormProps) {
     }
   };
 
+  const [isDemoSubmitting, setIsDemoSubmitting] = useState(false);
+
+  const handleDemoLogin = async () => {
+    setError(null);
+    setIsDemoSubmitting(true);
+    try {
+      const credential = await authService.loginAsDemo();
+      
+      // Ensure backend user profile shell exists for demo user
+      const { fetchWithAuth } = await import("@/lib/api-client");
+      await fetchWithAuth("/api/db/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: "demo@skillswap.com",
+          name: "Demo Explorer"
+        })
+      });
+
+      const routeResult = await profileRoutingService.getRouteForUser(credential.user);
+      const route = routeResult.data?.profileCompleted ? ROUTES.DASHBOARD : ROUTES.PROJECTS || "/projects";
+      router.replace(route);
+    } catch (demoError) {
+      setError(getErrorMessage(demoError));
+    } finally {
+      setIsDemoSubmitting(false);
+    }
+  };
+
   return (
-    <Card className="mx-auto w-full max-w-md">
-      <CardHeader>
-        <CardTitle>{isRegister ? "Create your account" : "Welcome back"}</CardTitle>
-        <CardDescription>
+    <Card className="mx-auto w-full max-w-md border border-slate-800/80 bg-slate-900/80 shadow-2xl shadow-black/40 backdrop-blur-md">
+      <CardHeader className="space-y-1">
+        <CardTitle className="text-2xl font-bold tracking-tight text-white">
+          {isRegister ? "Create your account" : "Welcome back"}
+        </CardTitle>
+        <CardDescription className="text-slate-400">
           {isRegister
             ? "Register to find collaborators and swap skills."
             : "Login to continue your SkillSwap workflow."}
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {/* Quick Demo Access Button */}
+        {!isRegister && (
+          <div className="mb-6 space-y-3">
+            <button
+              type="button"
+              onClick={handleDemoLogin}
+              disabled={isDemoSubmitting || isSubmitting}
+              className="group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border border-indigo-500/40 bg-gradient-to-r from-indigo-500/20 via-primary/20 to-cyan-500/20 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/10 transition-all duration-300 hover:border-primary/60 hover:from-indigo-500/30 hover:to-cyan-500/30 hover:shadow-xl hover:shadow-primary/20 active:scale-[0.99] disabled:opacity-50"
+            >
+              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>{isDemoSubmitting ? "Entering as Demo User..." : "⚡ Quick 1-Click Demo Login"}</span>
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-slate-800" />
+              <span className="text-xs uppercase tracking-wider text-slate-500 font-medium">Or continue with email</span>
+              <div className="h-px flex-1 bg-slate-800" />
+            </div>
+          </div>
+        )}
+
         <form className="space-y-4" onSubmit={handleSubmit}>
           {error && <Alert variant="error">{error}</Alert>}
 
@@ -183,13 +234,13 @@ export function AuthForm({ mode = "login" }: AuthFormProps) {
             </label>
           )}
 
-          <Button type="submit" className="w-full" size="lg" isLoading={isSubmitting}>
+          <Button type="submit" className="w-full shadow-lg shadow-primary/20" size="lg" isLoading={isSubmitting}>
             {isRegister ? <UserPlus className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
             {isRegister ? "Register" : "Login"}
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p className="mt-6 text-center text-sm text-slate-400">
           {isRegister ? "Already have an account?" : "New to SkillSwap?"}{" "}
           <Link
             href={isRegister ? ROUTES.LOGIN : ROUTES.REGISTER}
