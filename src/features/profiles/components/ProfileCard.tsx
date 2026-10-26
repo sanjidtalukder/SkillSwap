@@ -53,7 +53,7 @@ export function ProfileCard({
   const router = useRouter();
 
   return (
-    <Card className="group relative flex flex-col h-full overflow-hidden bg-card hover:-translate-y-1 hover:border-primary/60 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300">
+    <Card className="group relative flex flex-col h-full overflow-hidden border border-border/80 bg-card hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
       
       {/* Invisible link covering the entire card for accessible routing */}
       <Link href={profileUrl} className="absolute inset-0 z-10 rounded-xl" aria-label={`View ${data.name}'s profile`} />

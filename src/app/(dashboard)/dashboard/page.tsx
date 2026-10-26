@@ -202,17 +202,25 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground selection:bg-primary/20 selection:text-primary">
+      {/* Ambient background glow orbs */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-primary/15 blur-[130px]" />
+        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] rounded-full bg-indigo-500/10 blur-[140px]" />
+        <div className="absolute -bottom-40 left-1/3 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+      </div>
+
       <Header />
-      <main className="container mx-auto max-w-6xl flex-1 space-y-8 p-6 md:p-10">
+      <main className="container relative z-10 mx-auto max-w-6xl flex-1 space-y-8 p-6 md:p-10">
         
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/70 pb-6">
           <div className="space-y-1">
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-5xl bg-gradient-to-r from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
               Dashboard
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm md:text-base text-muted-foreground">
               Welcome back. Here&apos;s what&apos;s happening with your connections and projects.
             </p>
           </div>
@@ -220,13 +228,16 @@ export default function DashboardPage() {
           {/* Quick Actions Bar */}
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => router.push("/complete-profile?mode=edit")} className="hidden sm:flex">
-              <Edit className="w-4 h-4 mr-2" /> Edit Profile
+              <Edit className="w-4 h-4 mr-1.5" />
+              <span>Edit Profile</span>
             </Button>
             <Button variant="secondary" size="sm" onClick={() => router.push("/skills")}>
-              <Search className="w-4 h-4 mr-2" /> Browse Skills
+              <Search className="w-4 h-4 mr-1.5" />
+              <span>Browse Skills</span>
             </Button>
             <Button variant="primary" size="sm" onClick={() => router.push("/projects/new")}>
-              <Plus className="w-4 h-4 mr-2" /> New Project
+              <Plus className="w-4 h-4 mr-1.5" />
+              <span>New Project</span>
             </Button>
           </div>
         </div>
@@ -262,10 +273,10 @@ export default function DashboardPage() {
         {/* Recent Activity Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Latest Notifications */}
-          <div className="md:col-span-1 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-5 shadow-sm flex flex-col h-[420px] hover:border-primary/40 hover:shadow-md transition-all duration-300">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
+          <div className="md:col-span-1 rounded-2xl border border-border/80 bg-card p-5 shadow-xl shadow-black/20 flex flex-col h-[420px] hover:border-primary/40 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
               <h2 className="text-lg font-semibold flex items-center tracking-tight">
-                <Bell className="w-4 h-4 mr-2 text-primary" /> Notifications
+                <Bell className="w-4 h-4 mr-1.5 text-primary" /> Notifications
               </h2>
             </div>
             <div className="flex-1 overflow-y-auto space-y-3 pr-2 scroll-smooth custom-scrollbar">
@@ -274,7 +285,7 @@ export default function DashboardPage() {
               ) : statsData?.recentActivity.latestNotifications?.length > 0 ? (
                 <>
                   {statsData.recentActivity.latestNotifications.slice(0, 5).map((notif: any) => (
-                    <div key={notif.id} className="p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/40 transition-colors">
+                    <div key={notif.id} className="p-3 rounded-xl border border-border/60 bg-background/60 hover:bg-muted/40 transition-colors">
                       <p className="text-sm font-medium">{notif.title}</p>
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{notif.body}</p>
                       <p className="text-[10px] text-muted-foreground mt-2">{format(new Date(notif.createdAt), 'MMM d, h:mm a')}</p>
@@ -288,7 +299,7 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
-            <div className="mt-auto pt-3 border-t border-border/40 text-center">
+            <div className="mt-auto pt-3 border-t border-border/60 text-center">
               <Link href="/notifications" className="text-xs font-semibold text-primary/80 hover:text-primary transition-colors inline-flex items-center justify-center w-full py-1">
                 View All <ChevronRight className="w-3 h-3 ml-1" />
               </Link>
@@ -296,10 +307,10 @@ export default function DashboardPage() {
           </div>
 
           {/* Latest Connections */}
-          <div className="md:col-span-1 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-5 shadow-sm flex flex-col h-[420px] hover:border-primary/40 hover:shadow-md transition-all duration-300">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
+          <div className="md:col-span-1 rounded-2xl border border-border/80 bg-card p-5 shadow-xl shadow-black/20 flex flex-col h-[420px] hover:border-primary/40 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
               <h2 className="text-lg font-semibold flex items-center tracking-tight">
-                <Users className="w-4 h-4 mr-2 text-primary" /> Recent Connections
+                <Users className="w-4 h-4 mr-1.5 text-primary" /> Recent Connections
               </h2>
             </div>
             <div className="flex-1 overflow-y-auto space-y-3 pr-2 scroll-smooth custom-scrollbar">
@@ -311,7 +322,7 @@ export default function DashboardPage() {
                   const profile = otherUser?.profile;
                   if (!profile) return null;
                   return (
-                    <Link key={conn.id} href={`/u/${profile.username}`} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 bg-background/50 hover:bg-muted/40 transition-colors group">
+                    <Link key={conn.id} href={`/u/${profile.username}`} className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-background/60 hover:bg-muted/40 transition-colors group">
                       <Avatar src={profile.photo} alt={profile.fullName} className="w-10 h-10 border border-border/80" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{profile.fullName}</p>
@@ -328,7 +339,7 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
-            <div className="mt-auto pt-3 border-t border-border/40 text-center">
+            <div className="mt-auto pt-3 border-t border-border/60 text-center">
               <button onClick={() => toast.info("View All Connections coming soon")} className="text-xs font-semibold text-primary/80 hover:text-primary transition-colors inline-flex items-center justify-center w-full py-1">
                 View All <ChevronRight className="w-3 h-3 ml-1" />
               </button>
@@ -336,10 +347,10 @@ export default function DashboardPage() {
           </div>
 
           {/* Latest Projects */}
-          <div className="md:col-span-1 rounded-2xl border border-border/50 bg-card/40 backdrop-blur-sm p-5 shadow-sm flex flex-col h-[420px] hover:border-primary/40 hover:shadow-md transition-all duration-300">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/40">
+          <div className="md:col-span-1 rounded-2xl border border-border/80 bg-card p-5 shadow-xl shadow-black/20 flex flex-col h-[420px] hover:border-primary/40 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/60">
               <h2 className="text-lg font-semibold flex items-center tracking-tight">
-                <Activity className="w-4 h-4 mr-2 text-primary" /> Discover Projects
+                <Activity className="w-4 h-4 mr-1.5 text-primary" /> Discover Projects
               </h2>
             </div>
             <div className="flex-1 overflow-y-auto space-y-3 pr-2 scroll-smooth custom-scrollbar">
@@ -581,17 +592,17 @@ export default function DashboardPage() {
 // Helper Component for Stat Cards
 function StatCard({ title, value, icon, loading }: { title: string, value: number | string, icon: React.ReactNode, loading: boolean }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:shadow-md hover:border-primary/40 group">
+    <div className="rounded-2xl border border-border/80 bg-card p-5 shadow-xl shadow-black/20 transition-all hover:shadow-2xl hover:border-primary/40 group">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">{title}</h3>
-        <div className="p-2 rounded-lg bg-background/50 border border-border/50">
+        <div className="p-2.5 rounded-xl bg-background/60 border border-border/60">
           {icon}
         </div>
       </div>
       {loading ? (
         <div className="h-8 w-16 bg-muted animate-pulse rounded" />
       ) : (
-        <p className="text-2xl font-bold text-foreground">{value}</p>
+        <p className="text-3xl font-bold text-foreground">{value}</p>
       )}
     </div>
   );

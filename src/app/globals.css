@@ -4,35 +4,36 @@
 
 @layer base {
   :root {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Midnight Obsidian & Electric Indigo (Linear / Vercel Luxury Theme) */
+    --background: 228 35% 4%;            /* #07080d - Ultra-deep sleek dark base */
+    --foreground: 210 25% 97%;           /* Crisp high-contrast readable white */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 228 24% 9.5%;                /* #121522 - Rich elevated dark surface (pops clearly from bg) */
+    --card-foreground: 210 25% 97%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 228 24% 10%;              /* Elevated popover surface */
+    --popover-foreground: 210 25% 97%;
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 238 84% 67%;              /* #6366f1 - Vibrant Electric Indigo / Blurple */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 226 22% 14%;            /* Subtle interactive secondary background */
+    --secondary-foreground: 210 20% 93%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 226 20% 13%;                /* Subdued background for chips/tags/inputs */
+    --muted-foreground: 218 16% 65%;     /* Clean secondary text, easy on the eyes */
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 232 40% 16%;               /* Glowing hover state */
+    --accent-foreground: 210 25% 98%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;            /* Vivid modern red */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: 226 20% 16%;               /* 1px clean separation between panels */
+    --input: 226 20% 16%;
+    --ring: 238 84% 67%;                 /* Focus ring matching primary indigo */
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
   }
 }
 

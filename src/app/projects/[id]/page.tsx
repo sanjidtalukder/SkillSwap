@@ -138,29 +138,29 @@ export default function ProjectDetailsPage() {
   const isMember = project.members.some(m => m.userId === user?.uid);
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-950 text-foreground selection:bg-primary/20 selection:text-primary-200">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground selection:bg-primary/20 selection:text-primary">
       {/* Ambient background glow orbs */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-indigo-600/15 blur-[120px]" />
-        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] rounded-full bg-cyan-600/10 blur-[140px]" />
+        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-primary/15 blur-[130px]" />
+        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] rounded-full bg-indigo-500/10 blur-[140px]" />
         <div className="absolute -bottom-40 left-1/3 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[120px]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b12_1px,transparent_1px),linear-gradient(to_bottom,#1e293b12_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
       </div>
 
       <Header />
       <main className="container relative z-10 mx-auto max-w-5xl flex-1 space-y-8 p-6 md:p-10">
         
         {/* Navigation Breadcrumb / Back */}
-        <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
+        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
           <Link href="/projects" className="hover:text-primary transition-colors flex items-center gap-1">
             ← Back to Project Board
           </Link>
-          <span className="text-slate-600">/</span>
-          <span className="text-slate-300 truncate max-w-[200px]">{project.title}</span>
+          <span className="text-muted-foreground/60">/</span>
+          <span className="text-foreground truncate max-w-[200px]">{project.title}</span>
         </div>
 
         {/* Hero Header Section */}
-        <div className="p-6 md:p-8 rounded-2xl border border-slate-800/80 bg-gradient-to-b from-slate-900/90 via-slate-900/60 to-slate-950/90 shadow-2xl shadow-black/40 backdrop-blur-md space-y-6">
+        <div className="p-6 md:p-8 rounded-2xl border border-border/80 bg-card shadow-2xl shadow-black/40 backdrop-blur-md space-y-6">
           <div className="flex flex-wrap items-center gap-2.5">
             <Badge 
               variant={project.status === "active" ? "success" : "secondary"}

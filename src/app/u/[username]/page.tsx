@@ -120,12 +120,20 @@ export default function UserProfilePage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground selection:bg-primary/20 selection:text-primary">
+      {/* Ambient background glow orbs */}
+      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-primary/15 blur-[130px]" />
+        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] rounded-full bg-indigo-500/10 blur-[140px]" />
+        <div className="absolute -bottom-40 left-1/3 h-[500px] w-[500px] rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+      </div>
+
       <Header />
-      <main className="container mx-auto max-w-5xl flex-1 p-4 md:p-8 space-y-6">
+      <main className="container relative z-10 mx-auto max-w-5xl flex-1 p-4 md:p-8 space-y-6">
         
         {/* Top Banner and Info Section */}
-        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-xl shadow-black/20">
           {/* Banner */}
           <div 
             className="h-48 w-full bg-muted bg-cover bg-center"
@@ -134,35 +142,35 @@ export default function UserProfilePage() {
           
           <div className="px-6 pb-6 relative">
             {/* Avatar */}
-            <div className="absolute -top-16 left-6 rounded-full border-4 border-card bg-card">
+            <div className="absolute -top-16 left-6 rounded-full border-4 border-card bg-card shadow-md">
               <Avatar src={profile.photo || profile.avatarUrl} alt={profile.name} className="h-32 w-32" />
             </div>
 
             {/* Action Buttons */}
             <div className="flex justify-end pt-4 pb-2 h-14">
               {isOwner ? (
-                <Button onClick={() => router.push("/complete-profile")} variant="outline">
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit Profile
+                <Button onClick={() => router.push("/complete-profile")} variant="outline" size="md">
+                  <Edit className="w-4 h-4 mr-1.5" />
+                  <span>Edit Profile</span>
                 </Button>
               ) : (
                 <div className="flex gap-2">
                   {connectionStatus === "LOADING" && (
-                    <Button disabled>
-                      <Spinner size="sm" className="mr-2" />
-                      Loading
+                    <Button disabled size="md">
+                      <Spinner size="sm" className="mr-1.5" />
+                      <span>Loading</span>
                     </Button>
                   )}
                   {connectionStatus === "NOT_CONNECTED" && (
-                    <Button onClick={sendRequest} className="bg-blue-600 hover:bg-blue-700 text-white">
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Connect
+                    <Button onClick={sendRequest} size="md">
+                      <UserPlus className="w-4 h-4 mr-1.5" />
+                      <span>Connect</span>
                     </Button>
                   )}
                   {connectionStatus === "PENDING_SENT" && (
-                    <Button disabled className="bg-yellow-500 text-white opacity-70">
-                      <Clock className="w-4 h-4 mr-2" />
-                      Pending
+                    <Button disabled size="md" variant="secondary" className="opacity-70">
+                      <Clock className="w-4 h-4 mr-1.5" />
+                      <span>Pending</span>
                     </Button>
                   )}
                   {connectionStatus === "PENDING_RECEIVED" && (
@@ -241,12 +249,15 @@ export default function UserProfilePage() {
 
         {/* Skills Section */}
         <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-4">Skills I Have</h2>
+          <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xl shadow-black/20">
+            <h2 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              Skills I Have
+            </h2>
             <div className="flex flex-wrap gap-2">
               {profile.skillsHave.length > 0 ? (
                 profile.skillsHave.map(skill => (
-                  <Badge key={skill} variant="success" className="px-3 py-1">{skill}</Badge>
+                  <Badge key={skill} variant="success" className="px-3 py-1 bg-emerald-500/10 text-emerald-500 border-emerald-500/20">{skill}</Badge>
                 ))
               ) : (
                 <p className="text-sm text-muted-foreground">No skills listed yet.</p>
@@ -254,12 +265,15 @@ export default function UserProfilePage() {
             </div>
           </div>
           
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-4">Skills I Want to Learn</h2>
+          <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xl shadow-black/20">
+            <h2 className="text-lg font-semibold mb-4 text-foreground flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-primary"></span>
+              Skills I Want to Learn
+            </h2>
             <div className="flex flex-wrap gap-2">
               {profile.skillsNeed.length > 0 ? (
                 profile.skillsNeed.map(skill => (
-                  <Badge key={skill} variant="outline" className="px-3 py-1">{skill}</Badge>
+                  <Badge key={skill} variant="outline" className="px-3 py-1 bg-secondary/50 border-border text-foreground">{skill}</Badge>
                 ))
               ) : (
                 <p className="text-sm text-muted-foreground">No skills listed yet.</p>
@@ -269,11 +283,11 @@ export default function UserProfilePage() {
         </div>
 
         {/* Projects Section */}
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="rounded-2xl border border-border/80 bg-card p-6 shadow-xl shadow-black/20">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Projects</h2>
+            <h2 className="text-lg font-semibold text-foreground">Projects</h2>
             {isOwner && (
-              <Button variant="ghost" size="sm" onClick={() => router.push("/projects/new")}>
+              <Button variant="outline" size="sm" onClick={() => router.push("/projects/new")}>
                 Create Project
               </Button>
             )}
@@ -283,7 +297,7 @@ export default function UserProfilePage() {
             {profile.ownedProjects && profile.ownedProjects.length > 0 ? (
               profile.ownedProjects.map(project => (
                 <Link key={project.id} href={`/projects/${project.id}`} className="block group">
-                  <div className="border border-border/80 rounded-lg p-4 h-full transition-all hover:border-primary/50 hover:shadow-sm">
+                  <div className="border border-border/70 rounded-xl p-4 h-full bg-background/50 hover:bg-background/80 transition-all hover:border-primary/50 hover:shadow-md">
                     <div className="flex justify-between items-start">
                       <h3 className="font-semibold group-hover:text-primary transition-colors">{project.title}</h3>
                       <Badge variant={project.status === "active" ? "primary" : "secondary"}>
