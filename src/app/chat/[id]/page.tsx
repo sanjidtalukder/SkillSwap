@@ -130,13 +130,72 @@ export default function ChatWindow({ params }: { params: Promise<{ id: string }>
     setNewMessage(msg.message);
   };
 
+  const [conversationInfo, setConversationInfo] = useState<{ name: string; photo: string; isSelf: boolean } | null>(null);
+
+  useEffect(() => {
+    async function fetchConversationInfo() {
+      try {
+        const response = await fetchWithAuth("/api/chat/conversations");
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          const current = data.data.find((c: any) => c.id === id);
+          if (current) {
+            setConversationInfo({
+              name: current.otherUser.name,
+              photo: current.otherUser.photo,
+              isSelf: !!current.isSelf
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch conversation info", err);
+      }
+    }
+    fetchConversationInfo();
+  }, [id]);
+
   if (loading) {
-    return <div className="flex items-center justify-center h-full">Loading messages...</div>;
+    return <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Loading messages...</div>;
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-background">
+      {/* Chat Header */}
+      {conversationInfo && (
+        <div className="px-6 py-3.5 border-b border-border/60 bg-card/60 backdrop-blur flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Avatar src={conversationInfo.photo} alt={conversationInfo.name} size="md" />
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-foreground">{conversationInfo.name}</h2>
+                {conversationInfo.isSelf && (
+                  <span className="text-[10px] bg-primary/10 text-primary font-medium px-2 py-0.5 rounded-full border border-primary/20">
+                    Self Note
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {conversationInfo.isSelf 
+                  ? "Your personal space for ideas, notes and reminders" 
+                  : "Direct Message"}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        {messages.length === 0 && conversationInfo?.isSelf && (
+          <div className="flex flex-col items-center justify-center h-full text-center p-8 space-y-2">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-2">
+              <Avatar src={conversationInfo.photo} alt="You" size="md" />
+            </div>
+            <h3 className="font-semibold text-foreground">Welcome to your personal space</h3>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              Use this chat to write down quick notes, reminders, draft messages, or save useful links!
+            </p>
+          </div>
+        )}
         {messages.map((msg) => {
           const isMine = msg.sender.firebaseUid === user?.uid;
           

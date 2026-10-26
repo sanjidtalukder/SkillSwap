@@ -148,9 +148,9 @@ export default function ProjectsPage() {
             </p>
           </div>
           <Link href="/projects/new">
-            <Button className="shadow-lg shadow-primary/20 hover:shadow-primary/30 font-semibold px-5 py-2.5">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Project
+            <Button size="md" className="shadow-md shadow-primary/20 hover:shadow-primary/30 font-medium">
+              <Plus className="h-4 w-4" />
+              <span>Create Project</span>
             </Button>
           </Link>
         </div>
@@ -189,9 +189,14 @@ export default function ProjectsPage() {
             <option value="Intermediate" className="bg-slate-900">Intermediate</option>
             <option value="Advanced" className="bg-slate-900">Advanced</option>
           </select>
-          <Button type="submit" variant="secondary" className="border border-slate-700/70 hover:border-slate-500 hover:bg-slate-800">
-            <Filter className="mr-2 h-4 w-4 text-primary" />
-            Filter
+          <Button 
+            type="submit" 
+            variant="secondary" 
+            size="md"
+            className="border border-slate-700/70 hover:border-slate-500 hover:bg-slate-800 text-slate-200"
+          >
+            <Filter className="h-4 w-4 text-primary" />
+            <span>Filter</span>
           </Button>
         </form>
 

@@ -186,10 +186,19 @@ export default function ChatDashboard() {
                 ))}
               </div>
             ) : (
-              <div className="bg-muted/10 border border-dashed border-border/50 rounded-2xl p-10 flex flex-col items-center justify-center text-center">
-                <MessageSquare className="w-10 h-10 text-muted-foreground/40 mb-4" />
-                <h4 className="text-lg font-semibold text-foreground mb-1">No conversations yet</h4>
-                <p className="text-sm text-muted-foreground">Start connecting with other SkillSwap members.</p>
+              <div className="bg-muted/10 border border-dashed border-border/60 rounded-2xl p-8 flex flex-col items-center justify-center text-center">
+                <MessageSquare className="w-10 h-10 text-muted-foreground/40 mb-3" />
+                <h4 className="text-base font-semibold text-foreground mb-1">No direct messages yet</h4>
+                <p className="text-sm text-muted-foreground max-w-sm mb-4">
+                  Find peers with complementary skills and initiate a swap request to start direct messaging.
+                </p>
+                <Link
+                  href="/skills"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-all shadow-sm"
+                >
+                  Find Collaborators
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             )}
           </div>
@@ -229,10 +238,19 @@ export default function ChatDashboard() {
                 ))}
               </div>
             ) : (
-              <div className="bg-muted/10 border border-dashed border-border/50 rounded-2xl p-10 flex flex-col items-center justify-center text-center">
-                <Briefcase className="w-10 h-10 text-muted-foreground/40 mb-4" />
-                <h4 className="text-lg font-semibold text-foreground mb-1">No project conversations yet</h4>
-                <p className="text-sm text-muted-foreground">Join or create a project to start collaborating.</p>
+              <div className="bg-muted/10 border border-dashed border-border/60 rounded-2xl p-8 flex flex-col items-center justify-center text-center">
+                <Briefcase className="w-10 h-10 text-muted-foreground/40 mb-3" />
+                <h4 className="text-base font-semibold text-foreground mb-1">No project workspaces yet</h4>
+                <p className="text-sm text-muted-foreground max-w-sm mb-4">
+                  Join a project team or create your own project to collaborate in dedicated workspaces.
+                </p>
+                <Link
+                  href="/projects"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-xs font-semibold border border-border transition-all"
+                >
+                  Explore Projects
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             )}
           </div>

@@ -42,16 +42,19 @@ export async function GET(request: NextRequest) {
     });
 
     const formatted = conversations.map(c => {
-      const otherParticipant = c.participants.find(p => p.userId !== user!.id);
+      // Find other participant, or if self-chat (only 1 participant or both are self), use self
+      const otherParticipant = c.participants.find(p => p.userId !== user!.id) || c.participants.find(p => p.userId === user!.id);
       const myParticipant = c.participants.find(p => p.userId === user!.id);
+      const isSelf = c.participants.length === 1 || (otherParticipant && otherParticipant.userId === user!.id);
       const latestMessage = c.messages[0];
 
       return {
         id: c.id,
+        isSelf: !!isSelf,
         otherUser: {
           id: otherParticipant?.user.id,
           firebaseUid: otherParticipant?.user.firebaseUid,
-          name: otherParticipant?.user.profile?.fullName || "Unknown User",
+          name: isSelf ? "Note to Self (You)" : (otherParticipant?.user.profile?.fullName || "Unknown User"),
           photo: otherParticipant?.user.profile?.photo || ""
         },
         hasUnread: myParticipant?.hasUnread || false,
@@ -89,32 +92,75 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "targetUserId is required" }, { status: 400 });
     }
     
-    if (user!.id === targetUserId) {
-      return NextResponse.json({ success: false, error: "Cannot start conversation with yourself" }, { status: 400 });
-    }
+    const isSelfConversation = user!.id === targetUserId;
 
-    // Verify connection status
-    const connection = await prisma.matchRequest.findFirst({
-      where: {
-        OR: [
-          { senderId: user!.id, receiverId: targetUserId },
-          { senderId: targetUserId, receiverId: user!.id }
-        ]
+    if (!isSelfConversation) {
+      // Verify connection status for chatting with others
+      const connection = await prisma.matchRequest.findFirst({
+        where: {
+          OR: [
+            { senderId: user!.id, receiverId: targetUserId },
+            { senderId: targetUserId, receiverId: user!.id }
+          ]
+        }
+      });
+
+      if (!connection || connection.status !== "accepted") {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: "You must be connected before starting a conversation.",
+            connectionStatus: connection ? connection.status : "not_connected" 
+          },
+          { status: 403 }
+        );
       }
-    });
-
-    if (!connection || connection.status !== "accepted") {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: "You must be connected before starting a conversation.",
-          connectionStatus: connection ? connection.status : "not_connected" 
-        },
-        { status: 403 }
-      );
     }
 
-    // Check if conversation already exists between these two users
+    // Check if conversation already exists between these users (or self)
+    if (isSelfConversation) {
+      const existingSelfConversation = await prisma.conversation.findFirst({
+        where: {
+          project: null,
+          participants: {
+            every: { userId: user!.id }
+          }
+        },
+        include: {
+          participants: {
+            include: {
+              user: { select: { id: true, firebaseUid: true, profile: { select: { fullName: true, photo: true } } } }
+            }
+          }
+        }
+      });
+
+      if (existingSelfConversation) {
+        return NextResponse.json({ success: true, data: existingSelfConversation });
+      }
+
+      // Create new self-conversation
+      const newSelfConversation = await prisma.conversation.create({
+        data: {
+          participants: {
+            create: [
+              { userId: user!.id }
+            ]
+          }
+        },
+        include: {
+          participants: {
+            include: {
+              user: { select: { id: true, firebaseUid: true, profile: { select: { fullName: true, photo: true } } } }
+            }
+          }
+        }
+      });
+
+      return NextResponse.json({ success: true, data: newSelfConversation });
+    }
+
+    // Check if conversation already exists between two users
     const existingConversation = await prisma.conversation.findFirst({
       where: {
         AND: [

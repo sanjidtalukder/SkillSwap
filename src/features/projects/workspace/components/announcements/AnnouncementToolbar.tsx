@@ -32,8 +32,8 @@ export function AnnouncementToolbar({
         </div>
 
         <div className="flex items-center bg-card border border-border/60 rounded-md overflow-hidden shrink-0">
-          <div className="px-3 py-2 text-muted-foreground flex items-center bg-muted/20">
-            <Filter className="w-4 h-4 mr-2" />
+          <div className="px-2.5 py-1.5 text-muted-foreground flex items-center bg-muted/20">
+            <Filter className="w-4 h-4 mr-1.5 text-primary" />
             <select 
               className="bg-transparent text-sm focus:outline-none text-foreground cursor-pointer"
               value={filter}

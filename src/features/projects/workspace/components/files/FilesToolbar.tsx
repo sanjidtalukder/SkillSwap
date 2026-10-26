@@ -36,8 +36,8 @@ export function FilesToolbar({
 
       <div className="flex items-center gap-3 w-full sm:w-auto">
         <div className="flex items-center bg-background border border-border/60 rounded-md overflow-hidden">
-          <div className="px-3 py-2 border-r border-border/60 text-muted-foreground flex items-center bg-muted/20">
-            <Filter className="w-4 h-4 mr-2" />
+          <div className="px-2.5 py-1.5 border-r border-border/60 text-muted-foreground flex items-center bg-muted/20">
+            <Filter className="w-4 h-4 mr-1.5 text-primary" />
             <select 
               className="bg-transparent text-sm focus:outline-none text-foreground cursor-pointer"
               value={filter}
@@ -50,8 +50,8 @@ export function FilesToolbar({
               <option value="code">Code</option>
             </select>
           </div>
-          <div className="px-3 py-2 text-muted-foreground flex items-center bg-muted/20">
-            <ArrowUpDown className="w-4 h-4 mr-2" />
+          <div className="px-2.5 py-1.5 text-muted-foreground flex items-center bg-muted/20">
+            <ArrowUpDown className="w-4 h-4 mr-1.5" />
             <select 
               className="bg-transparent text-sm focus:outline-none text-foreground cursor-pointer"
               value={sort}
